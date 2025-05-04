@@ -1,10 +1,12 @@
 // app/income-sources/page.tsx
 "use client";
 
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { format } from "date-fns";
+import { CalendarIcon, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { Button } from "~/components/ui/button";
+import { Calendar } from "~/components/ui/calendar";
 import {
   Card,
   CardContent,
@@ -23,8 +25,14 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 import { Skeleton } from "~/components/ui/skeleton";
-import type { IncomeSourceSelect } from "~/server/db/schema";
+import { cn } from "~/lib/utils";
+import type { IncomeSelect, IncomeSourceSelect } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
 export default function IncomeSourcesPage() {
@@ -35,11 +43,20 @@ export default function IncomeSourcesPage() {
   });
   const [selectedSource, setSelectedSource] =
     useState<IncomeSourceSelect | null>(null);
+  const [showSourceDetails, setShowSourceDetails] = useState(false);
+  const [selectedSourceForDetails, setSelectedSourceForDetails] =
+    useState<IncomeSourceSelect | null>(null);
+  const [isEditIncomeOpen, setIsEditIncomeOpen] = useState(false);
+  const [selectedIncome, setSelectedIncome] = useState<IncomeSelect | null>(
+    null,
+  );
 
   // TRPC hooks
   const { data: incomeSources, isLoading: isLoadingIncomeSources } =
     api.income.getIncomeSources.useQuery();
   const { data: sourceStats } = api.income.getIncomeSourceStats.useQuery();
+  const { data: allIncomes, isLoading: isLoadingIncomes } =
+    api.income.getIncomes.useQuery();
   const utils = api.useUtils();
 
   const addIncomeSource = api.income.addIncomeSource.useMutation({
@@ -68,6 +85,17 @@ export default function IncomeSourcesPage() {
     onSuccess: () => {
       toast.success("Income source deleted successfully");
       void utils.income.getIncomeSources.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const editIncome = api.income.editIncome.useMutation({
+    onSuccess: () => {
+      toast.success("Income updated successfully");
+      setIsEditIncomeOpen(false);
+      void utils.income.getIncomes.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -104,6 +132,10 @@ export default function IncomeSourcesPage() {
   const getTotalForSource = (sourceId: string) => {
     const stats = sourceStats?.find((stat) => stat.sourceId === sourceId);
     return stats?.totalAmount ?? 0;
+  };
+
+  const getIncomesForSource = (sourceId: string) => {
+    return allIncomes?.filter((income) => income.sourceId === sourceId) ?? [];
   };
 
   return (
@@ -157,7 +189,14 @@ export default function IncomeSourcesPage() {
       ) : incomeSources?.length ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {incomeSources.map((source) => (
-            <Card key={source.id}>
+            <Card
+              key={source.id}
+              className="hover:bg-accent/50 cursor-pointer transition-colors"
+              onClick={() => {
+                setSelectedSourceForDetails(source);
+                setShowSourceDetails(true);
+              }}
+            >
               <CardHeader>
                 <CardTitle>{source.name}</CardTitle>
               </CardHeader>
@@ -178,8 +217,8 @@ export default function IncomeSourcesPage() {
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => {
-                      if (!source) return;
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setSelectedSource(source);
                       setIsEditSourceOpen(true);
                     }}
@@ -189,7 +228,10 @@ export default function IncomeSourcesPage() {
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => handleDeleteSource(source.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteSource(source.id);
+                    }}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -206,6 +248,77 @@ export default function IncomeSourcesPage() {
           </p>
         </div>
       )}
+
+      {/* Source Details Dialog */}
+      <Dialog open={showSourceDetails} onOpenChange={setShowSourceDetails}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>
+              Income Details - {selectedSourceForDetails?.name}
+            </DialogTitle>
+          </DialogHeader>
+
+          {isLoadingIncomes ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          ) : selectedSourceForDetails ? (
+            <div className="max-h-96 space-y-2 overflow-y-auto">
+              {getIncomesForSource(selectedSourceForDetails.id)
+                .sort(
+                  (a, b) =>
+                    new Date(b.date).getTime() - new Date(a.date).getTime(),
+                )
+                .map((income) => (
+                  <div
+                    key={income.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
+                    <div>
+                      <p className="font-medium">
+                        ₹ {income.amount.toLocaleString()}
+                      </p>
+                      <p className="text-muted-foreground text-sm">
+                        {format(new Date(income.date), "PPP")}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedIncome(income);
+                          setIsEditIncomeOpen(true);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSource(income.id);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <div className="py-4 text-center">
+              <p className="text-muted-foreground">
+                No income entries for this source.
+              </p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Source Dialog */}
       <Dialog open={isEditSourceOpen} onOpenChange={setIsEditSourceOpen}>
@@ -234,6 +347,90 @@ export default function IncomeSourcesPage() {
             <DialogFooter>
               <Button type="submit" disabled={editIncomeSource.isPending}>
                 {editIncomeSource.isPending ? "Saving..." : "Save Changes"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Income Dialog */}
+      <Dialog open={isEditIncomeOpen} onOpenChange={setIsEditIncomeOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Income</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!selectedIncome) return;
+              editIncome.mutate({
+                id: selectedIncome.id,
+                amount: selectedIncome.amount,
+                sourceId: selectedIncome.sourceId,
+                date: selectedIncome.date,
+              });
+            }}
+          >
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-amount">Amount</Label>
+                <Input
+                  id="edit-amount"
+                  type="number"
+                  value={selectedIncome?.amount ?? 0}
+                  onChange={(e) => {
+                    if (!selectedIncome) return;
+                    setSelectedIncome({
+                      ...selectedIncome,
+                      amount: Number(e.target.value),
+                    });
+                  }}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !selectedIncome?.date && "text-muted-foreground",
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {selectedIncome?.date ? (
+                        format(new Date(selectedIncome.date), "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={
+                        selectedIncome?.date
+                          ? new Date(selectedIncome.date)
+                          : undefined
+                      }
+                      onSelect={(date) => {
+                        if (!selectedIncome || !date) return;
+                        setSelectedIncome({
+                          ...selectedIncome,
+                          date: format(date, "yyyy-MM-dd"),
+                        });
+                      }}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={editIncome.isPending}>
+                {editIncome.isPending ? "Saving..." : "Save Changes"}
               </Button>
             </DialogFooter>
           </form>
