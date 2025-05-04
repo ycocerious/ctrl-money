@@ -198,7 +198,7 @@ export default function IncomeSourcesPage() {
               }}
             >
               <CardHeader>
-                <CardTitle>{source.name}</CardTitle>
+                <CardTitle className="text-lg">{source.name}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">

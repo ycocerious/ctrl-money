@@ -168,7 +168,7 @@ export default function DashboardPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Monthly Income</CardTitle>
-            <CardDescription>
+            <CardDescription className="mt-1">
               {format(currentMonth, "MMMM yyyy")}
             </CardDescription>
           </div>
