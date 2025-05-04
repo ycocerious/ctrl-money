@@ -8,7 +8,6 @@ import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -25,7 +24,6 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Skeleton } from "~/components/ui/skeleton";
-import { formatDateToYYYYMMDD } from "~/lib/utils/format-date";
 import type { IncomeSourceSelect } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
@@ -78,11 +76,8 @@ export default function IncomeSourcesPage() {
 
   const handleAddSource = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const today = new Date();
-    const formattedDate = formatDateToYYYYMMDD(today.toString());
     addIncomeSource.mutate({
       name: newSource.name,
-      date: formattedDate,
     });
   };
 
@@ -165,9 +160,6 @@ export default function IncomeSourcesPage() {
             <Card key={source.id}>
               <CardHeader>
                 <CardTitle>{source.name}</CardTitle>
-                <CardDescription>
-                  Added on {new Date(source.date).toLocaleDateString()}
-                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">

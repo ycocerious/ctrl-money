@@ -20,7 +20,6 @@ export const income = pgTable("income", {
 export const incomeSources = pgTable("income_sources", {
   id: commonIdSchema("id").primaryKey(),
   name: text("name").notNull(),
-  date: date("date").notNull(),
 });
 
 //relations

@@ -72,12 +72,11 @@ export const incomeRouter = createTRPCRouter({
     }),
 
   addIncomeSource: publicProcedure
-    .input(z.object({ name: z.string(), date: z.string() }))
+    .input(z.object({ name: z.string() }))
     .mutation(async ({ input }) => {
-      const { name, date } = input;
+      const { name } = input;
 
       await db.insert(incomeSources).values({
-        date,
         name,
       });
     }),
