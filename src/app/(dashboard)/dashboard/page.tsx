@@ -158,6 +158,8 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 md:p-6">
+      <h1 className="mb-4 text-xl font-bold">Dashboard</h1>
+
       {/* Monthly Income Card */}
       <Card
         className="mb-8"

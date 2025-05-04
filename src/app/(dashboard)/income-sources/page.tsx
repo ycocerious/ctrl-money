@@ -108,7 +108,7 @@ export default function IncomeSourcesPage() {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-bold">Income Sources</h1>
         <Dialog open={isAddSourceOpen} onOpenChange={setIsAddSourceOpen}>
           <DialogTrigger asChild>
