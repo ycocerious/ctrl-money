@@ -82,7 +82,7 @@ export default function IncomeSourcesPage() {
     const formattedDate = formatDateToYYYYMMDD(today.toString());
     addIncomeSource.mutate({
       name: newSource.name,
-      addedAt: formattedDate,
+      date: formattedDate,
     });
   };
 
@@ -166,7 +166,7 @@ export default function IncomeSourcesPage() {
               <CardHeader>
                 <CardTitle>{source.name}</CardTitle>
                 <CardDescription>
-                  Added on {new Date(source.addedAt).toLocaleDateString()}
+                  Added on {new Date(source.date).toLocaleDateString()}
                 </CardDescription>
               </CardHeader>
               <CardContent>

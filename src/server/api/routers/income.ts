@@ -12,7 +12,7 @@ export const incomeRouter = createTRPCRouter({
   }),
 
   getIncomes: publicProcedure.query(async () => {
-    return db.select().from(income).orderBy(income.addedAt);
+    return db.select().from(income).orderBy(income.date);
   }),
 
   getIncomeSourceStats: publicProcedure.query(async () => {
@@ -32,14 +32,14 @@ export const incomeRouter = createTRPCRouter({
       z.object({
         amount: z.number(),
         sourceId: z.string(),
-        addedAt: z.string(),
+        date: z.string(),
       }),
     )
     .mutation(async ({ input }) => {
-      const { amount, sourceId, addedAt } = input;
+      const { amount, sourceId, date } = input;
 
       await db.insert(income).values({
-        addedAt,
+        date,
         amount,
         sourceId,
       });
@@ -51,14 +51,15 @@ export const incomeRouter = createTRPCRouter({
         id: z.string(),
         amount: z.number(),
         sourceId: z.string(),
+        date: z.string(),
       }),
     )
     .mutation(async ({ input }) => {
-      const { id, amount, sourceId } = input;
+      const { id, amount, sourceId, date } = input;
 
       await db
         .update(income)
-        .set({ amount, sourceId })
+        .set({ amount, sourceId, date })
         .where(eq(income.id, id));
     }),
 
@@ -71,12 +72,12 @@ export const incomeRouter = createTRPCRouter({
     }),
 
   addIncomeSource: publicProcedure
-    .input(z.object({ name: z.string(), addedAt: z.string() }))
+    .input(z.object({ name: z.string(), date: z.string() }))
     .mutation(async ({ input }) => {
-      const { name, addedAt } = input;
+      const { name, date } = input;
 
       await db.insert(incomeSources).values({
-        addedAt,
+        date,
         name,
       });
     }),

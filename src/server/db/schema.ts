@@ -14,13 +14,13 @@ export const income = pgTable("income", {
   sourceId: text("source_id")
     .notNull()
     .references(() => incomeSources.id),
-  addedAt: date("added_at").notNull(),
+  date: date("date").notNull(),
 });
 
 export const incomeSources = pgTable("income_sources", {
   id: commonIdSchema("id").primaryKey(),
   name: text("name").notNull(),
-  addedAt: date("added_at").notNull(),
+  date: date("date").notNull(),
 });
 
 //relations

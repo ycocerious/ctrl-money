@@ -1,10 +1,18 @@
 "use client";
 
 import { addMonths, format, isSameMonth, subMonths } from "date-fns";
-import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { Button } from "~/components/ui/button";
+import { Calendar } from "~/components/ui/calendar";
 import {
   Card,
   CardContent,
@@ -25,6 +33,11 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -32,7 +45,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Skeleton } from "~/components/ui/skeleton";
-import { formatDateToYYYYMMDD } from "~/lib/utils/format-date";
+import { cn } from "~/lib/utils";
 import type { IncomeSelect } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
@@ -47,7 +60,7 @@ export default function DashboardPage() {
   const [newIncome, setNewIncome] = useState({
     amount: 0,
     sourceId: "",
-    addedAt: new Date(),
+    date: format(new Date(), "yyyy-MM-dd"),
   });
 
   // TRPC hooks
@@ -90,7 +103,7 @@ export default function DashboardPage() {
 
   // Filter incomes for current month
   const incomesForCurrentMonth = incomes?.filter((income) =>
-    isSameMonth(new Date(income.addedAt), currentMonth),
+    isSameMonth(new Date(income.date), currentMonth),
   );
 
   // Update the total calculation to use filtered incomes
@@ -107,12 +120,10 @@ export default function DashboardPage() {
   // Handle income form submission
   const handleAddIncome = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const today = new Date();
-    const formattedDate = formatDateToYYYYMMDD(today.toString());
     addIncome.mutate({
       amount: Number(newIncome.amount),
       sourceId: newIncome.sourceId,
-      addedAt: formattedDate,
+      date: newIncome.date,
     });
   };
 
@@ -124,6 +135,7 @@ export default function DashboardPage() {
       id: selectedIncome.id,
       amount: Number(selectedIncome.amount),
       sourceId: selectedIncome.sourceId,
+      date: selectedIncome.date,
     });
   };
 
@@ -139,7 +151,7 @@ export default function DashboardPage() {
       setNewIncome({
         amount: 0,
         sourceId: "",
-        addedAt: new Date(),
+        date: format(new Date(), "yyyy-MM-dd"),
       });
     }
   }, [isAddIncomeOpen]);
@@ -249,6 +261,45 @@ export default function DashboardPage() {
                       </SelectContent>
                     </Select>
                   </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="date">Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !newIncome.date && "text-muted-foreground",
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {newIncome.date ? (
+                            format(new Date(newIncome.date), "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={new Date(newIncome.date)}
+                          onSelect={(date) =>
+                            setNewIncome({
+                              ...newIncome,
+                              date: date
+                                ? format(date, "yyyy-MM-dd")
+                                : format(
+                                    new Date(newIncome.date),
+                                    "yyyy-MM-dd",
+                                  ),
+                            })
+                          }
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 </div>
                 <DialogFooter>
                   <Button type="submit" disabled={addIncome.isPending}>
@@ -292,7 +343,7 @@ export default function DashboardPage() {
                   >
                     <div>
                       <p className="font-medium">
-                        ₹{income.amount.toLocaleString()}
+                        ₹ {income.amount.toLocaleString()}
                       </p>
                       <p className="text-muted-foreground text-sm">
                         {source?.name}
@@ -351,7 +402,7 @@ export default function DashboardPage() {
                       id: selectedIncome.id,
                       amount: Number(e.target.value),
                       sourceId: selectedIncome.sourceId,
-                      addedAt: selectedIncome.addedAt,
+                      date: selectedIncome.date,
                     });
                   }}
                   required
@@ -367,7 +418,7 @@ export default function DashboardPage() {
                       id: selectedIncome.id,
                       amount: selectedIncome.amount,
                       sourceId: value,
-                      addedAt: selectedIncome.addedAt,
+                      date: selectedIncome.date,
                     });
                   }}
                   required
@@ -383,6 +434,52 @@ export default function DashboardPage() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="date">Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !selectedIncome?.date && "text-muted-foreground",
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {selectedIncome?.date ? (
+                        format(new Date(selectedIncome.date), "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={
+                        selectedIncome?.date
+                          ? new Date(selectedIncome.date)
+                          : new Date()
+                      }
+                      defaultMonth={
+                        selectedIncome?.date
+                          ? new Date(selectedIncome.date)
+                          : new Date()
+                      }
+                      onSelect={(date) => {
+                        if (!selectedIncome) return;
+                        setSelectedIncome({
+                          ...selectedIncome,
+                          date: date
+                            ? format(date, "yyyy-MM-dd")
+                            : format(selectedIncome.date, "yyyy-MM-dd"),
+                        });
+                      }}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             <DialogFooter>
