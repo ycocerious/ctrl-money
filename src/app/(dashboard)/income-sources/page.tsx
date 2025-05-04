@@ -114,10 +114,10 @@ export default function IncomeSourcesPage() {
   return (
     <div className="p-4 md:p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Income Sources</h1>
+        <h1 className="text-xl font-bold">Income Sources</h1>
         <Dialog open={isAddSourceOpen} onOpenChange={setIsAddSourceOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2">
+            <Button className="gap-1">
               <Plus className="h-4 w-4" /> Add Source
             </Button>
           </DialogTrigger>
