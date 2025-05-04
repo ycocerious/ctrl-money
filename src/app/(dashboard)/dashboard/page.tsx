@@ -169,7 +169,7 @@ export default function DashboardPage() {
           <div>
             <CardTitle>Monthly Income</CardTitle>
             <CardDescription>
-              Total income for {format(currentMonth, "MMMM yyyy")}
+              {format(currentMonth, "MMMM yyyy")}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -321,9 +321,6 @@ export default function DashboardPage() {
             <DialogTitle>
               Income Details - {format(currentMonth, "MMMM yyyy")}
             </DialogTitle>
-            <DialogDescription>
-              All income entries for this month.
-            </DialogDescription>
           </DialogHeader>
 
           {isLoadingIncomes ? (
