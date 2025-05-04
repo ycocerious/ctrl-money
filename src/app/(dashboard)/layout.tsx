@@ -71,17 +71,16 @@ export default function DashboardLayout({
       {/* Mobile Sidebar */}
       <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
         <SheetTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            className="fixed top-4 left-4 z-50 lg:hidden"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
+          <div className="bg-background fixed top-0 right-0 left-0 z-40 flex items-center border-b p-4 lg:hidden">
+            <Button variant="outline" size="icon" className="absolute left-4">
+              <Menu className="h-5 w-5" />
+            </Button>
+            <h1 className="flex-1 text-center text-xl font-bold">Ctrl.Money</h1>
+          </div>
         </SheetTrigger>
         <SheetContent side="left" className="w-64 p-0">
           <div className="p-6">
-            <h1 className="text-xl font-bold">Finance Tracker</h1>
+            <h1 className="text-xl font-bold">Ctrl.Money</h1>
           </div>
           <div className="px-4">
             <nav className="space-y-2">
