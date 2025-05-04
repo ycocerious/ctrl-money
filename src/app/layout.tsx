@@ -9,7 +9,16 @@ import { TRPCReactProvider } from "~/trpc/react";
 export const metadata: Metadata = {
   title: "Ctrl Money",
   description: "Personal finance app",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      {
+        url: "/logo.png",
+        sizes: "512x512",
+        type: "image/png",
+      },
+    ],
+  },
 };
 
 const geist = Geist({

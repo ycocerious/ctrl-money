@@ -1,0 +1,18 @@
+{
+  "theme_color": "#030711",
+  "background_color": "#0e4a4a",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/dashboard",
+  "name": "Ctrl Money",
+  "short_name": "Ctrl Money",
+  "description": "A personal finance tracker",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
