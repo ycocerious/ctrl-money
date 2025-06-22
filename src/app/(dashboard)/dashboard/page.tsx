@@ -70,10 +70,10 @@ export default function DashboardPage() {
   const utils = api.useUtils();
 
   const addIncome = api.income.addIncome.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Income added successfully");
       setIsAddIncomeOpen(false);
-      void utils.income.getIncomes.invalidate();
+      await utils.income.getIncomes.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -81,10 +81,10 @@ export default function DashboardPage() {
   });
 
   const editIncome = api.income.editIncome.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Income updated successfully");
       setIsEditIncomeOpen(false);
-      void utils.income.getIncomes.invalidate();
+      await utils.income.getIncomes.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -92,9 +92,9 @@ export default function DashboardPage() {
   });
 
   const deleteIncome = api.income.deleteIncome.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Income deleted successfully");
-      void utils.income.getIncomes.invalidate();
+      await utils.income.getIncomes.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);

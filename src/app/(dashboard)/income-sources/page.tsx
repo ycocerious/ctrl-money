@@ -60,10 +60,10 @@ export default function IncomeSourcesPage() {
   const utils = api.useUtils();
 
   const addIncomeSource = api.income.addIncomeSource.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Income source added successfully");
       setIsAddSourceOpen(false);
-      void utils.income.getIncomeSources.invalidate();
+      await utils.income.getIncomeSources.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -71,10 +71,10 @@ export default function IncomeSourcesPage() {
   });
 
   const editIncomeSource = api.income.editIncomeSource.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Income source updated successfully");
       setIsEditSourceOpen(false);
-      void utils.income.getIncomeSources.invalidate();
+      await utils.income.getIncomeSources.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -82,9 +82,9 @@ export default function IncomeSourcesPage() {
   });
 
   const deleteIncomeSource = api.income.deleteIncomeSource.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Income source deleted successfully");
-      void utils.income.getIncomeSources.invalidate();
+      await utils.income.getIncomeSources.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -92,10 +92,10 @@ export default function IncomeSourcesPage() {
   });
 
   const editIncome = api.income.editIncome.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Income updated successfully");
       setIsEditIncomeOpen(false);
-      void utils.income.getIncomes.invalidate();
+      await utils.income.getIncomes.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
