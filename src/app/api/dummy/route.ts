@@ -2,8 +2,10 @@ import { NextResponse } from "next/server";
 import { db } from "~/server/db";
 import { incomeSources } from "~/server/db/schema";
 
-export const GET = async () => {
-  const x = await db.select().from(incomeSources);
-  console.log(x);
-  return new NextResponse("Active", { status: 401 });
+export const POST = async () => {
+  await db.insert(incomeSources).values({
+    name: "Dummy",
+  });
+
+  return new NextResponse("Active", { status: 200 });
 };
