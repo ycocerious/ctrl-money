@@ -104,12 +104,17 @@ export default function IncomeStatementPage() {
           <h2 className="font-semibold">
             Income Statement - {format(currentMonth, "MMMM yyyy")}
           </h2>
-          <p className="text-muted-foreground mb-4">
-            Total -{" "}
-            <span className="font-bold">
-              ₹{totalIncomeForMonth.toLocaleString()}
-            </span>
-          </p>
+          <div className="flex justify-between">
+            <p className="text-muted-foreground mb-4">
+              Total:{" "}
+              <span className="font-bold">
+                ₹{totalIncomeForMonth.toLocaleString()}
+              </span>
+            </p>
+            <p className="text-muted-foreground">
+              Count: {incomesForCurrentMonth?.length ?? 0}
+            </p>
+          </div>
         </div>
 
         <div className="scrollbar-hide h-[calc(100%-80px)] overflow-y-auto">
@@ -139,24 +144,29 @@ export default function IncomeStatementPage() {
                           {source?.name}
                         </p>
                       </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            setSelectedIncome(income);
-                            setIsEditIncomeOpen(true);
-                          }}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteIncome(income.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                      <div className="flex flex-col">
+                        <div className="mb-1 flex gap-1">
+                          <Button
+                            variant="ghost"
+                            className="h-6 w-6"
+                            onClick={() => {
+                              setSelectedIncome(income);
+                              setIsEditIncomeOpen(true);
+                            }}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            className="h-6 w-6"
+                            onClick={() => handleDeleteIncome(income.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <p className="text-muted-foreground text-right text-xs">
+                          {new Date(income.date).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
                   );
