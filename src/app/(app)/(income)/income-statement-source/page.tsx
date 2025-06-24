@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { CalendarIcon, Pencil, Trash2 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { Button } from "~/components/ui/button";
@@ -35,26 +35,35 @@ import { api } from "~/trpc/react";
 
 export default function IncomeStatementPage() {
   const searchParams = useSearchParams();
-  const selectedMonth =
-    searchParams.get("month") ?? format(new Date(), "yyyy-MM-dd");
+  const selectedSourceId = searchParams.get("sourceId");
   const [isEditIncomeOpen, setIsEditIncomeOpen] = useState(false);
   const [selectedIncome, setSelectedIncome] = useState<IncomeSelect | null>(
     null,
   );
+  const router = useRouter();
+
+  if (!selectedSourceId) {
+    router.push("/income-sources");
+    return;
+  }
 
   // TRPC hooks
   const { data: incomeSources } = api.income.getIncomeSources.useQuery();
   const { data: incomesForCurrentMonth, isLoading: isLoadingIncomes } =
-    api.income.getIncomeStatementsForSpecificMonth.useQuery({
-      date: selectedMonth,
+    api.income.getIncomeStatementsForSpecificSource.useQuery({
+      sourceId: selectedSourceId,
     });
   const utils = api.useUtils();
+
+  const selectedSource = incomeSources?.find(
+    (source) => source.id === selectedSourceId,
+  );
 
   const editIncome = api.income.editIncome.useMutation({
     onSuccess: async () => {
       toast.success("Income updated successfully");
       setIsEditIncomeOpen(false);
-      await utils.income.getIncomeStatementsForSpecificMonth.invalidate();
+      await utils.income.getIncomeStatementsForSpecificSource.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -64,14 +73,13 @@ export default function IncomeStatementPage() {
   const deleteIncome = api.income.deleteIncome.useMutation({
     onSuccess: async () => {
       toast.success("Income deleted successfully");
-      await utils.income.getIncomeStatementsForSpecificMonth.invalidate();
+      await utils.income.getIncomeStatementsForSpecificSource.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
     },
   });
 
-  // Update the total calculation to use filtered incomes
   const totalIncomeForMonth =
     incomesForCurrentMonth?.reduce(
       (total, income) => total + income.amount,
@@ -102,7 +110,7 @@ export default function IncomeStatementPage() {
       <div className="h-[calc(100vh-120px)] rounded-lg border">
         <div className="bg-background sticky top-0 border-b px-4 pt-4">
           <h2 className="font-semibold">
-            Income Statement - {format(selectedMonth, "MMMM yyyy")}
+            Income Statement - {selectedSource?.name}
           </h2>
           <div className="flex justify-between">
             <p className="text-muted-foreground mb-4">
@@ -175,7 +183,7 @@ export default function IncomeStatementPage() {
             ) : (
               <div className="py-4 text-center">
                 <p className="text-muted-foreground">
-                  No income entries for this month.
+                  No income entries for this source.
                 </p>
               </div>
             )}

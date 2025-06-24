@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { CalendarIcon, Pencil, Trash2 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { Button } from "~/components/ui/button";
@@ -30,127 +30,113 @@ import {
 } from "~/components/ui/select";
 import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
-import type { IncomeSelect } from "~/server/db/schema";
+import type { SpendSelect } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
-export default function IncomeStatementPage() {
+export default function SpendStatementPage() {
   const searchParams = useSearchParams();
-  const selectedSourceId = searchParams.get("sourceId");
-  const [isEditIncomeOpen, setIsEditIncomeOpen] = useState(false);
-  const [selectedIncome, setSelectedIncome] = useState<IncomeSelect | null>(
-    null,
-  );
-  const router = useRouter();
-
-  if (!selectedSourceId) {
-    router.push("/income-sources");
-    return;
-  }
+  const selectedMonth =
+    searchParams.get("month") ?? format(new Date(), "yyyy-MM-dd");
+  const [isEditSpendOpen, setIsEditSpendOpen] = useState(false);
+  const [selectedSpend, setSelectedSpend] = useState<SpendSelect | null>(null);
 
   // TRPC hooks
-  const { data: incomeSources } = api.income.getIncomeSources.useQuery();
-  const { data: incomesForCurrentMonth, isLoading: isLoadingIncomes } =
-    api.income.getIncomeStatementsForSpecificSource.useQuery({
-      sourceId: selectedSourceId,
+  const { data: spendCategories } = api.spend.getSpendCategories.useQuery();
+  const { data: spendsForCurrentMonth, isLoading: isLoadingSpends } =
+    api.spend.getSpendStatementsForSpecificMonth.useQuery({
+      date: selectedMonth,
     });
   const utils = api.useUtils();
 
-  const selectedSource = incomeSources?.find(
-    (source) => source.id === selectedSourceId,
-  );
-
-  const editIncome = api.income.editIncome.useMutation({
+  const editSpend = api.spend.editSpend.useMutation({
     onSuccess: async () => {
-      toast.success("Income updated successfully");
-      setIsEditIncomeOpen(false);
-      await utils.income.getIncomeStatementsForSpecificSource.invalidate();
+      toast.success("Spend updated successfully");
+      setIsEditSpendOpen(false);
+      await utils.spend.getSpendStatementsForSpecificMonth.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
     },
   });
 
-  const deleteIncome = api.income.deleteIncome.useMutation({
+  const deleteSpend = api.spend.deleteSpend.useMutation({
     onSuccess: async () => {
-      toast.success("Income deleted successfully");
-      await utils.income.getIncomeStatementsForSpecificSource.invalidate();
+      toast.success("Spend deleted successfully");
+      await utils.spend.getSpendStatementsForSpecificMonth.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
     },
   });
 
-  // Update the total calculation to use filtered incomes
-  const totalIncomeForMonth =
-    incomesForCurrentMonth?.reduce(
-      (total, income) => total + income.amount,
-      0,
-    ) ?? 0;
+  const totalSpendForMonth =
+    spendsForCurrentMonth?.reduce((total, spend) => total + spend.amount, 0) ??
+    0;
 
-  const handleEditIncome = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleEditSpend = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!selectedIncome) return;
+    if (!selectedSpend) return;
 
-    editIncome.mutate({
-      id: selectedIncome.id,
-      amount: Number(selectedIncome.amount),
-      sourceId: selectedIncome.sourceId,
-      date: selectedIncome.date,
+    editSpend.mutate({
+      id: selectedSpend.id,
+      amount: Number(selectedSpend.amount),
+      categoryId: selectedSpend.categoryId,
+      date: selectedSpend.date,
     });
   };
 
-  const handleDeleteIncome = (id: string) => {
-    if (confirm("Are you sure you want to delete this income?")) {
-      deleteIncome.mutate({ id });
+  const handleDeleteSpend = (id: string) => {
+    if (confirm("Are you sure you want to delete this spend?")) {
+      deleteSpend.mutate({ id });
     }
   };
 
   return (
     <div className="p-4 md:p-6">
-      {/* Monthly Incomes Detail */}
+      {/* Monthly Spends Detail */}
       <div className="h-[calc(100vh-120px)] rounded-lg border">
         <div className="bg-background sticky top-0 border-b px-4 pt-4">
           <h2 className="font-semibold">
-            Income Statement - {selectedSource?.name}
+            Spend Statement - {format(selectedMonth, "MMMM yyyy")}
           </h2>
           <div className="flex justify-between">
             <p className="text-muted-foreground mb-4">
               Total:{" "}
               <span className="font-bold">
-                ₹{totalIncomeForMonth.toLocaleString()}
+                ₹{totalSpendForMonth.toLocaleString()}
               </span>
             </p>
             <p className="text-muted-foreground">
-              Count: {incomesForCurrentMonth?.length ?? 0}
+              Count: {spendsForCurrentMonth?.length ?? 0}
             </p>
           </div>
         </div>
 
         <div className="scrollbar-hide h-[calc(100%-80px)] overflow-y-auto">
           <div className="p-4">
-            {isLoadingIncomes ? (
+            {isLoadingSpends ? (
               <div className="space-y-2">
                 {[1, 2, 3].map((i) => (
                   <Skeleton key={i} className="h-16 w-full" />
                 ))}
               </div>
-            ) : incomesForCurrentMonth?.length ? (
+            ) : spendsForCurrentMonth?.length ? (
               <div className="space-y-3">
-                {incomesForCurrentMonth.map((income) => {
-                  const source = incomeSources?.find(
-                    (s) => s.id === income.sourceId,
+                {spendsForCurrentMonth.map((spend) => {
+                  const category = spendCategories?.find(
+                    (c) => c.id === spend.categoryId,
                   );
                   return (
                     <div
-                      key={income.id}
+                      key={spend.id}
                       className="flex items-center justify-between rounded-lg border p-3"
                     >
                       <div>
                         <p className="font-medium">
-                          ₹ {income.amount.toLocaleString()}
+                          ₹ {spend.amount.toLocaleString()}
                         </p>
                         <p className="text-muted-foreground text-sm">
-                          {source?.name}
+                          {category?.name}
                         </p>
                       </div>
                       <div className="flex flex-col">
@@ -159,8 +145,8 @@ export default function IncomeStatementPage() {
                             variant="ghost"
                             className="h-6 w-6"
                             onClick={() => {
-                              setSelectedIncome(income);
-                              setIsEditIncomeOpen(true);
+                              setSelectedSpend(spend);
+                              setIsEditSpendOpen(true);
                             }}
                           >
                             <Pencil className="h-4 w-4" />
@@ -168,13 +154,13 @@ export default function IncomeStatementPage() {
                           <Button
                             variant="ghost"
                             className="h-6 w-6"
-                            onClick={() => handleDeleteIncome(income.id)}
+                            onClick={() => handleDeleteSpend(spend.id)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                         <p className="text-muted-foreground text-right text-xs">
-                          {new Date(income.date).toLocaleDateString()}
+                          {new Date(spend.date).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
@@ -184,7 +170,7 @@ export default function IncomeStatementPage() {
             ) : (
               <div className="py-4 text-center">
                 <p className="text-muted-foreground">
-                  No income entries for this month.
+                  No spend entries for this month.
                 </p>
               </div>
             )}
@@ -192,54 +178,54 @@ export default function IncomeStatementPage() {
         </div>
       </div>
 
-      {/* Edit Income Dialog */}
-      <Dialog open={isEditIncomeOpen} onOpenChange={setIsEditIncomeOpen}>
+      {/* Edit Spend Dialog */}
+      <Dialog open={isEditSpendOpen} onOpenChange={setIsEditSpendOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Income</DialogTitle>
+            <DialogTitle>Edit Spend</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleEditIncome}>
+          <form onSubmit={handleEditSpend}>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="edit-amount">Amount</Label>
                 <Input
                   id="edit-amount"
                   type="number"
-                  value={selectedIncome?.amount ?? 0}
+                  value={selectedSpend?.amount ?? 0}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    if (!selectedIncome) return;
-                    setSelectedIncome({
-                      id: selectedIncome.id,
+                    if (!selectedSpend) return;
+                    setSelectedSpend({
+                      id: selectedSpend.id,
                       amount: Number(e.target.value),
-                      sourceId: selectedIncome.sourceId,
-                      date: selectedIncome.date,
+                      categoryId: selectedSpend.categoryId,
+                      date: selectedSpend.date,
                     });
                   }}
                   required
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-source">Source</Label>
+                <Label htmlFor="edit-category">Category</Label>
                 <Select
-                  value={selectedIncome?.sourceId ?? ""}
+                  value={selectedSpend?.categoryId ?? ""}
                   onValueChange={(value: string) => {
-                    if (!selectedIncome) return;
-                    setSelectedIncome({
-                      id: selectedIncome.id,
-                      amount: selectedIncome.amount,
-                      sourceId: value,
-                      date: selectedIncome.date,
+                    if (!selectedSpend) return;
+                    setSelectedSpend({
+                      id: selectedSpend.id,
+                      amount: selectedSpend.amount,
+                      categoryId: value,
+                      date: selectedSpend.date,
                     });
                   }}
                   required
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select an income source" />
+                    <SelectValue placeholder="Select a spend category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {incomeSources?.map((source) => (
-                      <SelectItem key={source.id} value={source.id}>
-                        {source.name}
+                    {spendCategories?.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -253,12 +239,12 @@ export default function IncomeStatementPage() {
                       variant="outline"
                       className={cn(
                         "w-full justify-start text-left font-normal",
-                        !selectedIncome?.date && "text-muted-foreground",
+                        !selectedSpend?.date && "text-muted-foreground",
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {selectedIncome?.date ? (
-                        format(new Date(selectedIncome.date), "PPP")
+                      {selectedSpend?.date ? (
+                        format(new Date(selectedSpend.date), "PPP")
                       ) : (
                         <span>Pick a date</span>
                       )}
@@ -268,22 +254,22 @@ export default function IncomeStatementPage() {
                     <Calendar
                       mode="single"
                       selected={
-                        selectedIncome?.date
-                          ? new Date(selectedIncome.date)
+                        selectedSpend?.date
+                          ? new Date(selectedSpend.date)
                           : new Date()
                       }
                       defaultMonth={
-                        selectedIncome?.date
-                          ? new Date(selectedIncome.date)
+                        selectedSpend?.date
+                          ? new Date(selectedSpend.date)
                           : new Date()
                       }
                       onSelect={(date) => {
-                        if (!selectedIncome) return;
-                        setSelectedIncome({
-                          ...selectedIncome,
+                        if (!selectedSpend) return;
+                        setSelectedSpend({
+                          ...selectedSpend,
                           date: date
                             ? format(date, "yyyy-MM-dd")
-                            : format(selectedIncome.date, "yyyy-MM-dd"),
+                            : format(selectedSpend.date, "yyyy-MM-dd"),
                         });
                       }}
                       initialFocus
@@ -293,8 +279,8 @@ export default function IncomeStatementPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" disabled={editIncome.isPending}>
-                {editIncome.isPending ? "Saving..." : "Save Changes"}
+              <Button type="submit" disabled={editSpend.isPending}>
+                {editSpend.isPending ? "Saving..." : "Save Changes"}
               </Button>
             </DialogFooter>
           </form>

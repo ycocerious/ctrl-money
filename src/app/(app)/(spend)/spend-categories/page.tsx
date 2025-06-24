@@ -1,4 +1,3 @@
-// app/income-sources/page.tsx
 "use client";
 
 import { Pencil, Plus, Trash2 } from "lucide-react";
@@ -25,124 +24,126 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Skeleton } from "~/components/ui/skeleton";
-import type { IncomeSourceSelect } from "~/server/db/schema";
+import type { SpendCategorySelect } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
-export default function IncomeSourcesPage() {
-  const [isAddSourceOpen, setIsAddSourceOpen] = useState(false);
-  const [isEditSourceOpen, setIsEditSourceOpen] = useState(false);
-  const [newSource, setNewSource] = useState({
+export default function SpendCategoriesPage() {
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
+  const [newCategory, setNewCategory] = useState({
     name: "",
   });
-  const [selectedSource, setSelectedSource] =
-    useState<IncomeSourceSelect | null>(null);
+  const [selectedCategory, setSelectedCategory] =
+    useState<SpendCategorySelect | null>(null);
   const router = useRouter();
 
   // TRPC hooks
-  const { data: incomeSources, isLoading: isLoadingIncomeSources } =
-    api.income.getIncomeSources.useQuery();
-  const { data: sourceStats } =
-    api.income.getTotalIncomeForAllSources.useQuery();
+  const { data: spendCategories, isLoading: isLoadingSpendCategories } =
+    api.spend.getSpendCategories.useQuery();
+  const { data: totalSpends } =
+    api.spend.getTotalSpendForAllCategories.useQuery();
   const utils = api.useUtils();
 
-  const addIncomeSource = api.income.addIncomeSource.useMutation({
+  const addSpendCategory = api.spend.addSpendCategory.useMutation({
     onSuccess: async () => {
-      toast.success("Income source added successfully");
-      setIsAddSourceOpen(false);
-      await utils.income.getIncomeSources.invalidate();
+      toast.success("Spend category added successfully");
+      setIsAddCategoryOpen(false);
+      await utils.spend.getSpendCategories.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
     },
   });
 
-  const editIncomeSource = api.income.editIncomeSource.useMutation({
+  const editSpendCategory = api.spend.editSpendCategory.useMutation({
     onSuccess: async () => {
-      toast.success("Income source updated successfully");
-      setIsEditSourceOpen(false);
-      await utils.income.getIncomeSources.invalidate();
+      toast.success("Spend category updated successfully");
+      setIsEditCategoryOpen(false);
+      await utils.spend.getSpendCategories.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
     },
   });
 
-  const deleteIncomeSource = api.income.deleteIncomeSource.useMutation({
+  const deleteSpendCategory = api.spend.deleteSpendCategory.useMutation({
     onSuccess: async () => {
-      toast.success("Income source deleted successfully");
-      await utils.income.getIncomeSources.invalidate();
+      toast.success("Spend category deleted successfully");
+      await utils.spend.getSpendCategories.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
     },
   });
 
-  const handleAddSource = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAddCategory = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    addIncomeSource.mutate({
-      name: newSource.name,
+    addSpendCategory.mutate({
+      name: newCategory.name,
     });
   };
 
-  const handleEditSource = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleEditCategory = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!selectedSource) return;
+    if (!selectedCategory) return;
 
-    editIncomeSource.mutate({
-      id: selectedSource.id,
-      name: selectedSource.name,
+    editSpendCategory.mutate({
+      id: selectedCategory.id,
+      name: selectedCategory.name,
     });
   };
 
-  const handleDeleteSource = (id: string) => {
+  const handleDeleteCategory = (id: string) => {
     if (
       confirm(
-        "Are you sure you want to delete this income source? This will delete all income entries associated with it.",
+        "Are you sure you want to delete this spend category? This will delete all spend entries associated with it.",
       )
     ) {
-      deleteIncomeSource.mutate({ id });
+      deleteSpendCategory.mutate({ id });
     }
   };
 
-  const getTotalForSource = (sourceId: string) => {
-    const stats = sourceStats?.find((stat) => stat.sourceId === sourceId);
-    return stats?.totalAmount ?? 0;
+  const getTotalForCategory = (categoryId: string) => {
+    const totalSpend = totalSpends?.find(
+      (stat) => stat.categoryId === categoryId,
+    );
+    return totalSpend?.totalAmount ?? 0;
   };
 
   return (
     <div className="p-4 md:p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold">Income Sources</h1>
-        <Dialog open={isAddSourceOpen} onOpenChange={setIsAddSourceOpen}>
+        <h1 className="text-xl font-bold">Spend Categories</h1>
+        <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
           <DialogTrigger asChild>
             <Button className="gap-1">
-              <Plus className="h-4 w-4" /> Add Source
+              <Plus className="h-4 w-4" /> Add Category
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Income Source</DialogTitle>
+              <DialogTitle>Add New Spend Category</DialogTitle>
               <DialogDescription>
-                Enter a name for the new income source.
+                Enter a name for the new spend category.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleAddSource}>
+            <form onSubmit={handleAddCategory}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Name</Label>
                   <Input
                     id="name"
-                    value={newSource.name}
+                    value={newCategory.name}
                     onChange={(e) =>
-                      setNewSource({ ...newSource, name: e.target.value })
+                      setNewCategory({ ...newCategory, name: e.target.value })
                     }
                     required
                   />
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit" disabled={addIncomeSource.isPending}>
-                  {addIncomeSource.isPending ? "Adding..." : "Add Source"}
+                <Button type="submit" disabled={addSpendCategory.isPending}>
+                  {addSpendCategory.isPending ? "Adding..." : "Add Category"}
                 </Button>
               </DialogFooter>
             </form>
@@ -150,26 +151,28 @@ export default function IncomeSourcesPage() {
         </Dialog>
       </div>
 
-      {/* Sources Grid */}
-      {isLoadingIncomeSources ? (
+      {/* Categories Grid */}
+      {isLoadingSpendCategories ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="h-40 w-full" />
           ))}
         </div>
-      ) : incomeSources?.length ? (
+      ) : spendCategories?.length ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {incomeSources.map((source) => (
+          {spendCategories.map((category) => (
             <Card
-              key={source.id}
+              key={category.id}
               className="hover:bg-accent/50 cursor-pointer transition-colors"
               onClick={() =>
-                !isEditSourceOpen &&
-                router.push(`/income-statement-source?sourceId=${source.id}`)
+                !isEditCategoryOpen &&
+                router.push(
+                  `/spend-statement-category?categoryId=${category.id}`,
+                )
               }
             >
               <CardHeader>
-                <CardTitle className="text-lg">{source.name}</CardTitle>
+                <CardTitle className="text-lg">{category.name}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
@@ -177,10 +180,10 @@ export default function IncomeSourcesPage() {
                   {new Intl.NumberFormat("en-IN", {
                     maximumFractionDigits: 0,
                     style: "decimal",
-                  }).format(getTotalForSource(source.id))}
+                  }).format(getTotalForCategory(category.id))}
                 </div>
                 <p className="text-muted-foreground text-sm">
-                  Total income from this source
+                  Total spend in this category
                 </p>
               </CardContent>
               <CardFooter className="justify-end">
@@ -190,8 +193,8 @@ export default function IncomeSourcesPage() {
                     size="icon"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedSource(source);
-                      setIsEditSourceOpen(true);
+                      setSelectedCategory(category);
+                      setIsEditCategoryOpen(true);
                     }}
                   >
                     <Pencil className="h-4 w-4" />
@@ -201,7 +204,7 @@ export default function IncomeSourcesPage() {
                     size="icon"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDeleteSource(source.id);
+                      handleDeleteCategory(category.id);
                     }}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -214,29 +217,29 @@ export default function IncomeSourcesPage() {
       ) : (
         <div className="rounded-lg border p-8 text-center">
           <p className="text-muted-foreground">
-            No income sources found. Add your first income source to get
+            No spend categories found. Add your first spend category to get
             started.
           </p>
         </div>
       )}
 
-      {/* Edit Source Dialog */}
-      <Dialog open={isEditSourceOpen} onOpenChange={setIsEditSourceOpen}>
+      {/* Edit Category Dialog */}
+      <Dialog open={isEditCategoryOpen} onOpenChange={setIsEditCategoryOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Income Source</DialogTitle>
+            <DialogTitle>Edit Spend Category</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleEditSource}>
+          <form onSubmit={handleEditCategory}>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="edit-name">Name</Label>
                 <Input
                   id="edit-name"
-                  value={selectedSource?.name ?? ""}
+                  value={selectedCategory?.name ?? ""}
                   onChange={(e) => {
-                    if (!selectedSource) return;
-                    setSelectedSource({
-                      ...selectedSource,
+                    if (!selectedCategory) return;
+                    setSelectedCategory({
+                      ...selectedCategory,
                       name: e.target.value,
                     });
                   }}
@@ -245,8 +248,8 @@ export default function IncomeSourcesPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" disabled={editIncomeSource.isPending}>
-                {editIncomeSource.isPending ? "Saving..." : "Save Changes"}
+              <Button type="submit" disabled={editSpendCategory.isPending}>
+                {editSpendCategory.isPending ? "Saving..." : "Save Changes"}
               </Button>
             </DialogFooter>
           </form>

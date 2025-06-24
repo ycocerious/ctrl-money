@@ -1,7 +1,7 @@
 // app/(dashboard)/layout.tsx
 "use client";
 
-import { LayoutDashboard, Menu, PieChart } from "lucide-react";
+import { LayoutDashboard, Menu, PieChart, Wallet } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -19,6 +19,11 @@ const sidebarItems = [
     title: "Income Sources",
     href: "/income-sources",
     icon: <PieChart className="h-5 w-5" />,
+  },
+  {
+    title: "Spend Categories",
+    href: "/spend-categories",
+    icon: <Wallet className="h-5 w-5" />,
   },
 ];
 

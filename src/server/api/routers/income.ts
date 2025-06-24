@@ -1,5 +1,4 @@
-// server/api/routers/income.ts
-import { eq, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
@@ -33,7 +32,11 @@ export const incomeRouter = createTRPCRouter({
     .input(z.object({ sourceId: z.string() }))
     .query(async ({ input }) => {
       const { sourceId } = input;
-      return db.select().from(income).where(eq(income.sourceId, sourceId));
+      return db
+        .select()
+        .from(income)
+        .where(eq(income.sourceId, sourceId))
+        .orderBy(desc(income.date));
     }),
 
   getTotalIncomeForSpecificMonth: publicProcedure
