@@ -55,6 +55,7 @@ export default function IncomeStatementPage() {
       toast.success("Income updated successfully");
       setIsEditIncomeOpen(false);
       await utils.income.getIncomeStatementsForSpecificMonth.invalidate();
+      await utils.income.getIncomeStatementsForSpecificSource.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -65,6 +66,7 @@ export default function IncomeStatementPage() {
     onSuccess: async () => {
       toast.success("Income deleted successfully");
       await utils.income.getIncomeStatementsForSpecificMonth.invalidate();
+      await utils.income.getIncomeStatementsForSpecificSource.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);

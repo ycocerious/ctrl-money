@@ -82,6 +82,8 @@ export default function DashboardPage() {
       toast.success("Income added successfully");
       setIsAddIncomeOpen(false);
       await utils.income.getTotalIncomeForSpecificMonth.invalidate();
+      await utils.income.getIncomeStatementsForSpecificMonth.invalidate();
+      await utils.income.getIncomeStatementsForSpecificSource.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -93,6 +95,8 @@ export default function DashboardPage() {
       toast.success("Spend added successfully");
       setIsAddSpendOpen(false);
       await utils.spend.getTotalSpendForSpecificMonth.invalidate();
+      await utils.spend.getSpendStatementsForSpecificMonth.invalidate();
+      await utils.spend.getSpendStatementsForSpecificCategory.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
