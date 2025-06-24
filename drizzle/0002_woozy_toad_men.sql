@@ -1,0 +1,1 @@
+CREATE INDEX "income_dateIndex" ON "income" USING btree ("date");

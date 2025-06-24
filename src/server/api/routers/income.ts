@@ -11,9 +11,23 @@ export const incomeRouter = createTRPCRouter({
     return db.select().from(incomeSources).orderBy(incomeSources.name);
   }),
 
-  getIncomes: publicProcedure.query(async () => {
-    return db.select().from(income).orderBy(income.date);
-  }),
+  getMonthlyIncomeStatements: publicProcedure
+    .input(
+      z.object({
+        date: z.string(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const { date } = input;
+
+      return db
+        .select()
+        .from(income)
+        .where(
+          sql`DATE_TRUNC('month', ${income.date}::date) = DATE_TRUNC('month', ${date}::date)`,
+        )
+        .orderBy(income.date);
+    }),
 
   getIncomeSourceStats: publicProcedure.query(async () => {
     const stats = await db

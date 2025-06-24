@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { date, integer, pgTable, text } from "drizzle-orm/pg-core";
+import { date, index, integer, pgTable, text } from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
 
 const commonIdSchema = (columnName: string) =>
@@ -8,14 +8,20 @@ const commonIdSchema = (columnName: string) =>
     .$defaultFn(() => nanoid());
 
 //tables
-export const income = pgTable("income", {
-  id: commonIdSchema("id").primaryKey(),
-  amount: integer("amount").notNull(),
-  sourceId: text("source_id")
-    .notNull()
-    .references(() => incomeSources.id),
-  date: date("date").notNull(),
-});
+export const income = pgTable(
+  "income",
+  {
+    id: commonIdSchema("id").primaryKey(),
+    amount: integer("amount").notNull(),
+    sourceId: text("source_id")
+      .notNull()
+      .references(() => incomeSources.id),
+    date: date("date").notNull(),
+  },
+  (table) => ({
+    dateIndex: index("income_dateIndex").on(table.date),
+  }),
+);
 
 export const incomeSources = pgTable("income_sources", {
   id: commonIdSchema("id").primaryKey(),
