@@ -1,7 +1,7 @@
 // app/(dashboard)/layout.tsx
 "use client";
 
-import { LayoutDashboard, Menu, PieChart, Wallet } from "lucide-react";
+import { Home, LayoutDashboard, Menu, PieChart, Wallet } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -81,10 +81,22 @@ export default function DashboardLayout({
               <Menu className="h-5 w-5" />
             </Button>
             <h1 className="flex-1 text-center text-xl font-bold">Ctrl.Money</h1>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-4"
+              asChild
+              aria-label="Go to Dashboard"
+            >
+              <Link href="/dashboard">
+                <Home className="h-5 w-5" />
+                <span className="sr-only">Home</span>
+              </Link>
+            </Button>
           </div>
         </SheetTrigger>
         <SheetContent side="left" className="w-64 p-0">
-          <div className="p-6">
+          <div className="p-6 pb-0">
             <h1 className="text-xl font-bold">Ctrl.Money</h1>
           </div>
           <div className="px-4">
