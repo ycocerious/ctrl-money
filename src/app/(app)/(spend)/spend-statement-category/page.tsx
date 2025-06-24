@@ -1,7 +1,13 @@
 "use client";
 
-import { format } from "date-fns";
-import { CalendarIcon, Pencil, Trash2 } from "lucide-react";
+import { addMonths, format, subMonths } from "date-fns";
+import {
+  CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
@@ -37,6 +43,7 @@ export default function SpendStatementPage() {
   const searchParams = useSearchParams();
   const selectedCategoryId = searchParams.get("categoryId");
   const [isEditSpendOpen, setIsEditSpendOpen] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [selectedSpend, setSelectedSpend] = useState<SpendSelect | null>(null);
   const router = useRouter();
 
@@ -48,8 +55,9 @@ export default function SpendStatementPage() {
   // TRPC hooks
   const { data: spendCategories } = api.spend.getSpendCategories.useQuery();
   const { data: spendsForSelectedMonth, isLoading: isLoadingSpends } =
-    api.spend.getSpendStatementsForSpecificCategory.useQuery({
+    api.spend.getSpendStatementsForSpecificCategoryAndMonth.useQuery({
       categoryId: selectedCategoryId,
+      date: format(selectedMonth, "yyyy-MM-dd"),
     });
   const utils = api.useUtils();
 
@@ -61,7 +69,7 @@ export default function SpendStatementPage() {
     onSuccess: async () => {
       toast.success("Spend updated successfully");
       setIsEditSpendOpen(false);
-      await utils.spend.getSpendStatementsForSpecificCategory.invalidate();
+      await utils.spend.getSpendStatementsForSpecificCategoryAndMonth.invalidate();
       await utils.spend.getSpendStatementsForSpecificMonth.invalidate();
     },
     onError: (error) => {
@@ -72,7 +80,7 @@ export default function SpendStatementPage() {
   const deleteSpend = api.spend.deleteSpend.useMutation({
     onSuccess: async () => {
       toast.success("Spend deleted successfully");
-      await utils.spend.getSpendStatementsForSpecificCategory.invalidate();
+      await utils.spend.getSpendStatementsForSpecificCategoryAndMonth.invalidate();
       await utils.spend.getSpendStatementsForSpecificMonth.invalidate();
     },
     onError: (error) => {
@@ -102,10 +110,17 @@ export default function SpendStatementPage() {
     }
   };
 
+  //Month navigation
+  const prevMonth = () => {
+    setSelectedMonth(subMonths(selectedMonth, 1));
+  };
+  const nextMonth = () => {
+    setSelectedMonth(addMonths(selectedMonth, 1));
+  };
+
   return (
     <div className="p-4 md:p-6">
-      {/* Monthly Spends Detail */}
-      <div className="h-[calc(100vh-120px)] rounded-lg border">
+      <div className="flex h-[calc(100vh-120px)] flex-col rounded-lg border">
         <div className="bg-background sticky top-0 border-b px-4 pt-4">
           <h2 className="font-semibold">
             Spend Statement - {selectedCategory?.name}
@@ -123,7 +138,7 @@ export default function SpendStatementPage() {
           </div>
         </div>
 
-        <div className="scrollbar-hide h-[calc(100%-80px)] overflow-y-auto">
+        <div className="scrollbar-hide flex-1 overflow-y-auto">
           <div className="p-4">
             {isLoadingSpends ? (
               <div className="space-y-2">
@@ -181,10 +196,25 @@ export default function SpendStatementPage() {
             ) : (
               <div className="py-4 text-center">
                 <p className="text-muted-foreground">
-                  No spend entries for this category.
+                  No spend entries for this category in this month.
                 </p>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Month navigation at bottom inside border */}
+        <div className="border-t p-3">
+          <div className="flex items-center justify-center gap-2">
+            <Button variant="outline" size="icon" onClick={prevMonth}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-muted-foreground min-w-[120px] text-center">
+              {format(selectedMonth, "MMMM yyyy")}
+            </span>
+            <Button variant="outline" size="icon" onClick={nextMonth}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </div>

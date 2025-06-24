@@ -98,7 +98,7 @@ export default function DashboardPage() {
       setIsAddSpendOpen(false);
       await utils.spend.getTotalSpendForSpecificMonth.invalidate();
       await utils.spend.getSpendStatementsForSpecificMonth.invalidate();
-      await utils.spend.getSpendStatementsForSpecificCategory.invalidate();
+      await utils.spend.getSpendStatementsForSpecificCategoryAndMonth.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);

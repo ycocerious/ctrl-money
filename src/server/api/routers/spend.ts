@@ -1,4 +1,4 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
@@ -28,14 +28,19 @@ export const spendRouter = createTRPCRouter({
         .orderBy(spend.date);
     }),
 
-  getSpendStatementsForSpecificCategory: publicProcedure
-    .input(z.object({ categoryId: z.string() }))
+  getSpendStatementsForSpecificCategoryAndMonth: publicProcedure
+    .input(z.object({ categoryId: z.string(), date: z.string() }))
     .query(async ({ input }) => {
-      const { categoryId } = input;
+      const { categoryId, date } = input;
       return db
         .select()
         .from(spend)
-        .where(eq(spend.categoryId, categoryId))
+        .where(
+          and(
+            eq(spend.categoryId, categoryId),
+            sql`DATE_TRUNC('month', ${spend.date}::date) = DATE_TRUNC('month', ${date}::date)`,
+          ),
+        )
         .orderBy(desc(spend.date));
     }),
 

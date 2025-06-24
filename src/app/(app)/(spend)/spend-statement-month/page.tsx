@@ -53,7 +53,7 @@ export default function SpendStatementPage() {
       toast.success("Spend updated successfully");
       setIsEditSpendOpen(false);
       await utils.spend.getSpendStatementsForSpecificMonth.invalidate();
-      await utils.spend.getSpendStatementsForSpecificCategory.invalidate();
+      await utils.spend.getSpendStatementsForSpecificCategoryAndMonth.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -64,7 +64,7 @@ export default function SpendStatementPage() {
     onSuccess: async () => {
       toast.success("Spend deleted successfully");
       await utils.spend.getSpendStatementsForSpecificMonth.invalidate();
-      await utils.spend.getSpendStatementsForSpecificCategory.invalidate();
+      await utils.spend.getSpendStatementsForSpecificCategoryAndMonth.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
