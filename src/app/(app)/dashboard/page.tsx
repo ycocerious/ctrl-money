@@ -43,10 +43,12 @@ import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
 export default function DashboardPage() {
-  const [currentMonthForIncome, setCurrentMonthForIncome] = useState(
+  const [selectedMonthForIncome, setSelectedMonthForIncome] = useState(
     new Date(),
   );
-  const [currentMonthForSpend, setCurrentMonthForSpend] = useState(new Date());
+  const [selectedMonthForSpend, setSelectedMonthForSpend] = useState(
+    new Date(),
+  );
 
   const [isAddIncomeOpen, setIsAddIncomeOpen] = useState(false);
   const [newIncome, setNewIncome] = useState({
@@ -68,12 +70,12 @@ export default function DashboardPage() {
   const { data: incomeSources } = api.income.getIncomeSources.useQuery();
   const { data: totalIncomeForMonth, isLoading: isLoadingIncomes } =
     api.income.getTotalIncomeForSpecificMonth.useQuery({
-      date: format(currentMonthForIncome, "yyyy-MM-dd"),
+      date: format(selectedMonthForIncome, "yyyy-MM-dd"),
     });
   const { data: spendCategories } = api.spend.getSpendCategories.useQuery();
   const { data: totalSpendForMonth, isLoading: isLoadingSpends } =
     api.spend.getTotalSpendForSpecificMonth.useQuery({
-      date: format(currentMonthForSpend, "yyyy-MM-dd"),
+      date: format(selectedMonthForSpend, "yyyy-MM-dd"),
     });
   const utils = api.useUtils();
 
@@ -105,13 +107,13 @@ export default function DashboardPage() {
 
   // Handle month navigation
   const prevMonthForIncome = () =>
-    setCurrentMonthForIncome(subMonths(currentMonthForIncome, 1));
+    setSelectedMonthForIncome(subMonths(selectedMonthForIncome, 1));
   const nextMonthForIncome = () =>
-    setCurrentMonthForIncome(addMonths(currentMonthForIncome, 1));
+    setSelectedMonthForIncome(addMonths(selectedMonthForIncome, 1));
   const prevMonthForSpend = () =>
-    setCurrentMonthForSpend(subMonths(currentMonthForSpend, 1));
+    setSelectedMonthForSpend(subMonths(selectedMonthForSpend, 1));
   const nextMonthForSpend = () =>
-    setCurrentMonthForSpend(addMonths(currentMonthForSpend, 1));
+    setSelectedMonthForSpend(addMonths(selectedMonthForSpend, 1));
 
   // Handle income form submission
   const handleAddIncome = (e: React.FormEvent<HTMLFormElement>) => {
@@ -161,7 +163,7 @@ export default function DashboardPage() {
         onClick={() =>
           !isAddIncomeOpen &&
           router.push(
-            `/income-statement-month?month=${format(currentMonthForIncome, "yyyy-MM-dd")}`,
+            `/income-statement-month?month=${format(selectedMonthForIncome, "yyyy-MM-dd")}`,
           )
         }
       >
@@ -169,7 +171,7 @@ export default function DashboardPage() {
           <div>
             <CardTitle>Monthly Income</CardTitle>
             <CardDescription className="mt-1">
-              {format(currentMonthForIncome, "MMMM yyyy")}
+              {format(selectedMonthForIncome, "MMMM yyyy")}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -320,7 +322,7 @@ export default function DashboardPage() {
         onClick={() =>
           !isAddSpendOpen &&
           router.push(
-            `/spend-statement-month?month=${format(currentMonthForSpend, "yyyy-MM-dd")}`,
+            `/spend-statement-month?month=${format(selectedMonthForSpend, "yyyy-MM-dd")}`,
           )
         }
       >
@@ -328,7 +330,7 @@ export default function DashboardPage() {
           <div>
             <CardTitle>Monthly Spend</CardTitle>
             <CardDescription className="mt-1">
-              {format(currentMonthForSpend, "MMMM yyyy")}
+              {format(selectedMonthForSpend, "MMMM yyyy")}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">

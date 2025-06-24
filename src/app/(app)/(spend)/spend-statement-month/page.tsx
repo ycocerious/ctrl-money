@@ -42,7 +42,7 @@ export default function SpendStatementPage() {
 
   // TRPC hooks
   const { data: spendCategories } = api.spend.getSpendCategories.useQuery();
-  const { data: spendsForCurrentMonth, isLoading: isLoadingSpends } =
+  const { data: spendsForSelectedMonth, isLoading: isLoadingSpends } =
     api.spend.getSpendStatementsForSpecificMonth.useQuery({
       date: selectedMonth,
     });
@@ -72,7 +72,7 @@ export default function SpendStatementPage() {
   });
 
   const totalSpendForMonth =
-    spendsForCurrentMonth?.reduce((total, spend) => total + spend.amount, 0) ??
+    spendsForSelectedMonth?.reduce((total, spend) => total + spend.amount, 0) ??
     0;
 
   const handleEditSpend = (e: React.FormEvent<HTMLFormElement>) => {
@@ -109,7 +109,7 @@ export default function SpendStatementPage() {
               </span>
             </p>
             <p className="text-muted-foreground">
-              Count: {spendsForCurrentMonth?.length ?? 0}
+              Count: {spendsForSelectedMonth?.length ?? 0}
             </p>
           </div>
         </div>
@@ -122,9 +122,9 @@ export default function SpendStatementPage() {
                   <Skeleton key={i} className="h-16 w-full" />
                 ))}
               </div>
-            ) : spendsForCurrentMonth?.length ? (
+            ) : spendsForSelectedMonth?.length ? (
               <div className="space-y-3">
-                {spendsForCurrentMonth.map((spend) => {
+                {spendsForSelectedMonth.map((spend) => {
                   const category = spendCategories?.find(
                     (c) => c.id === spend.categoryId,
                   );
