@@ -42,7 +42,7 @@ export default function IncomeStatementPage() {
   // TRPC hooks
   const { data: incomeSources } = api.income.getIncomeSources.useQuery();
   const { data: incomes, isLoading: isLoadingIncomes } =
-    api.income.getMonthlyIncomeStatements.useQuery({
+    api.income.getIncomeStatementsForSpecificMonth.useQuery({
       date: format(currentMonth, "yyyy-MM-dd"),
     });
   const utils = api.useUtils();
@@ -51,7 +51,7 @@ export default function IncomeStatementPage() {
     onSuccess: async () => {
       toast.success("Income updated successfully");
       setIsEditIncomeOpen(false);
-      await utils.income.getMonthlyIncomeStatements.invalidate();
+      await utils.income.getIncomeStatementsForSpecificMonth.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -61,7 +61,7 @@ export default function IncomeStatementPage() {
   const deleteIncome = api.income.deleteIncome.useMutation({
     onSuccess: async () => {
       toast.success("Income deleted successfully");
-      await utils.income.getMonthlyIncomeStatements.invalidate();
+      await utils.income.getIncomeStatementsForSpecificMonth.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);

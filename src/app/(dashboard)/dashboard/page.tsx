@@ -1,6 +1,6 @@
 "use client";
 
-import { addMonths, format, isSameMonth, subMonths } from "date-fns";
+import { addMonths, format, subMonths } from "date-fns";
 import { CalendarIcon, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -57,8 +57,8 @@ export default function DashboardPage() {
 
   // TRPC hooks
   const { data: incomeSources } = api.income.getIncomeSources.useQuery();
-  const { data: incomes, isLoading: isLoadingIncomes } =
-    api.income.getMonthlyIncomeStatements.useQuery({
+  const { data: totalIncomeForMonth, isLoading: isLoadingIncomes } =
+    api.income.getTotalIncomeForSpecificMonth.useQuery({
       date: format(currentMonth, "yyyy-MM-dd"),
     });
   const utils = api.useUtils();
@@ -67,24 +67,12 @@ export default function DashboardPage() {
     onSuccess: async () => {
       toast.success("Income added successfully");
       setIsAddIncomeOpen(false);
-      await utils.income.getMonthlyIncomeStatements.invalidate();
+      await utils.income.getTotalIncomeForSpecificMonth.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
     },
   });
-
-  // Filter incomes for current month
-  const incomesForCurrentMonth = incomes?.filter((income) =>
-    isSameMonth(new Date(income.date), currentMonth),
-  );
-
-  // Update the total calculation to use filtered incomes
-  const totalIncomeForMonth =
-    incomesForCurrentMonth?.reduce(
-      (total, income) => total + income.amount,
-      0,
-    ) ?? 0;
 
   // Handle month navigation
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -155,7 +143,7 @@ export default function DashboardPage() {
             {isLoadingIncomes ? (
               <Skeleton className="h-8 w-32" />
             ) : (
-              `₹ ${totalIncomeForMonth.toLocaleString()}`
+              `₹ ${totalIncomeForMonth?.toLocaleString()}`
             )}
           </div>
         </CardContent>

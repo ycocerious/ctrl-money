@@ -11,7 +11,7 @@ export const incomeRouter = createTRPCRouter({
     return db.select().from(incomeSources).orderBy(incomeSources.name);
   }),
 
-  getMonthlyIncomeStatements: publicProcedure
+  getIncomeStatementsForSpecificMonth: publicProcedure
     .input(
       z.object({
         date: z.string(),
@@ -29,7 +29,28 @@ export const incomeRouter = createTRPCRouter({
         .orderBy(income.date);
     }),
 
-  getIncomeSourceStats: publicProcedure.query(async () => {
+  getTotalIncomeForSpecificMonth: publicProcedure
+    .input(
+      z.object({
+        date: z.string(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const { date } = input;
+
+      const result = await db
+        .select({
+          totalAmount: sql<number>`sum(${income.amount})`,
+        })
+        .from(income)
+        .where(
+          sql`DATE_TRUNC('month', ${income.date}::date) = DATE_TRUNC('month', ${date}::date)`,
+        );
+
+      return result[0]?.totalAmount ?? 0;
+    }),
+
+  getTotalIncomeForAllSources: publicProcedure.query(async () => {
     const stats = await db
       .select({
         sourceId: income.sourceId,

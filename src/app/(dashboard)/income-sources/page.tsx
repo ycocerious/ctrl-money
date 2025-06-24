@@ -39,7 +39,8 @@ export default function IncomeSourcesPage() {
   // TRPC hooks
   const { data: incomeSources, isLoading: isLoadingIncomeSources } =
     api.income.getIncomeSources.useQuery();
-  const { data: sourceStats } = api.income.getIncomeSourceStats.useQuery();
+  const { data: sourceStats } =
+    api.income.getTotalIncomeForAllSources.useQuery();
   const utils = api.useUtils();
 
   const addIncomeSource = api.income.addIncomeSource.useMutation({
