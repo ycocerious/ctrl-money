@@ -29,6 +29,13 @@ export const incomeRouter = createTRPCRouter({
         .orderBy(income.date);
     }),
 
+  getIncomeStatementsForSpecificSource: publicProcedure
+    .input(z.object({ sourceId: z.string() }))
+    .query(async ({ input }) => {
+      const { sourceId } = input;
+      return db.select().from(income).where(eq(income.sourceId, sourceId));
+    }),
+
   getTotalIncomeForSpecificMonth: publicProcedure
     .input(
       z.object({

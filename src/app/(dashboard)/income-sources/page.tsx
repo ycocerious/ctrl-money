@@ -2,6 +2,7 @@
 "use client";
 
 import { Pencil, Plus, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { Button } from "~/components/ui/button";
@@ -35,6 +36,7 @@ export default function IncomeSourcesPage() {
   });
   const [selectedSource, setSelectedSource] =
     useState<IncomeSourceSelect | null>(null);
+  const router = useRouter();
 
   // TRPC hooks
   const { data: incomeSources, isLoading: isLoadingIncomeSources } =
@@ -161,6 +163,10 @@ export default function IncomeSourcesPage() {
             <Card
               key={source.id}
               className="hover:bg-accent/50 cursor-pointer transition-colors"
+              onClick={() =>
+                !isEditSourceOpen &&
+                router.push(`/income-statement-source?sourceId=${source.id}`)
+              }
             >
               <CardHeader>
                 <CardTitle className="text-lg">{source.name}</CardTitle>

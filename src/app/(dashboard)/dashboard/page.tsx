@@ -41,11 +41,9 @@ import {
 import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
-import { useStore } from "~/zustand/store";
 
 export default function DashboardPage() {
-  const currentMonth = useStore((state) => state.currentMonth);
-  const setCurrentMonth = useStore((state) => state.setCurrentMonth);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const [isAddIncomeOpen, setIsAddIncomeOpen] = useState(false);
   const [newIncome, setNewIncome] = useState({
@@ -106,7 +104,12 @@ export default function DashboardPage() {
       {/* Monthly Income Card */}
       <Card
         className="mb-8"
-        onClick={() => !isAddIncomeOpen && router.push("/income-statement")}
+        onClick={() =>
+          !isAddIncomeOpen &&
+          router.push(
+            `/income-statement-month?month=${format(currentMonth, "yyyy-MM-dd")}`,
+          )
+        }
       >
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
