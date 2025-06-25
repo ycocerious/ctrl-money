@@ -31,6 +31,7 @@ export const spends = pgTable(
   {
     id: commonIdSchema("id").primaryKey(),
     amount: integer("amount").notNull(),
+    name: text("name").notNull(),
     categoryId: text("category_id")
       .notNull()
       .references(() => spendCategories.id),

@@ -83,15 +83,17 @@ export const spendRouter = createTRPCRouter({
         amount: z.number(),
         categoryId: z.string(),
         date: z.string(),
+        name: z.string(),
       }),
     )
     .mutation(async ({ input }) => {
-      const { amount, categoryId, date } = input;
+      const { amount, categoryId, date, name } = input;
 
       await db.insert(spends).values({
         date,
         amount,
         categoryId,
+        name,
       });
     }),
 
@@ -102,14 +104,15 @@ export const spendRouter = createTRPCRouter({
         amount: z.number(),
         categoryId: z.string(),
         date: z.string(),
+        name: z.string(),
       }),
     )
     .mutation(async ({ input }) => {
-      const { id, amount, categoryId, date } = input;
+      const { id, amount, categoryId, date, name } = input;
 
       await db
         .update(spends)
-        .set({ amount, categoryId, date })
+        .set({ amount, categoryId, date, name })
         .where(eq(spends.id, id));
     }),
 

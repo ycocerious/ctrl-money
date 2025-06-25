@@ -1,0 +1,1 @@
+ALTER TABLE "spends" ADD COLUMN "name" text NOT NULL;

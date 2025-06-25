@@ -62,6 +62,7 @@ export default function DashboardPage() {
     amount: 0,
     categoryId: "",
     date: format(new Date(), "yyyy-MM-dd"),
+    name: "",
   });
 
   const router = useRouter();
@@ -132,6 +133,7 @@ export default function DashboardPage() {
       amount: Number(newSpend.amount),
       categoryId: newSpend.categoryId,
       date: newSpend.date,
+      name: newSpend.name,
     });
   };
 
@@ -149,6 +151,7 @@ export default function DashboardPage() {
         amount: 0,
         categoryId: "",
         date: format(new Date(), "yyyy-MM-dd"),
+        name: "",
       });
     }
   }, [isAddIncomeOpen, isAddSpendOpen]);
@@ -399,6 +402,17 @@ export default function DashboardPage() {
                           ...newSpend,
                           amount: Number(e.target.value),
                         })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      value={newSpend.name}
+                      onChange={(e) =>
+                        setNewSpend({ ...newSpend, name: e.target.value })
                       }
                       required
                     />

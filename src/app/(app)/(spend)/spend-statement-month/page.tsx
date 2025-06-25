@@ -84,6 +84,7 @@ export default function SpendStatementPage() {
       amount: Number(selectedSpend.amount),
       categoryId: selectedSpend.categoryId,
       date: selectedSpend.date,
+      name: selectedSpend.name,
     });
   };
 
@@ -138,7 +139,7 @@ export default function SpendStatementPage() {
                           ₹ {spend.amount.toLocaleString()}
                         </p>
                         <p className="text-muted-foreground text-sm">
-                          {category?.name}
+                          {category?.name} - {spend.name?.slice(0, 15)}...
                         </p>
                       </div>
                       <div className="flex flex-col">
@@ -197,10 +198,23 @@ export default function SpendStatementPage() {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     if (!selectedSpend) return;
                     setSelectedSpend({
-                      id: selectedSpend.id,
+                      ...selectedSpend,
                       amount: Number(e.target.value),
-                      categoryId: selectedSpend.categoryId,
-                      date: selectedSpend.date,
+                    });
+                  }}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-name">Name</Label>
+                <Input
+                  id="edit-name"
+                  value={selectedSpend?.name ?? ""}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    if (!selectedSpend) return;
+                    setSelectedSpend({
+                      ...selectedSpend,
+                      name: e.target.value,
                     });
                   }}
                   required
@@ -213,10 +227,8 @@ export default function SpendStatementPage() {
                   onValueChange={(value: string) => {
                     if (!selectedSpend) return;
                     setSelectedSpend({
-                      id: selectedSpend.id,
-                      amount: selectedSpend.amount,
+                      ...selectedSpend,
                       categoryId: value,
-                      date: selectedSpend.date,
                     });
                   }}
                   required

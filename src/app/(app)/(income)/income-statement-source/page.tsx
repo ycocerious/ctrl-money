@@ -210,10 +210,8 @@ export default function IncomeStatementPage() {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     if (!selectedIncome) return;
                     setSelectedIncome({
-                      id: selectedIncome.id,
+                      ...selectedIncome,
                       amount: Number(e.target.value),
-                      sourceId: selectedIncome.sourceId,
-                      date: selectedIncome.date,
                     });
                   }}
                   required
@@ -226,10 +224,8 @@ export default function IncomeStatementPage() {
                   onValueChange={(value: string) => {
                     if (!selectedIncome) return;
                     setSelectedIncome({
-                      id: selectedIncome.id,
-                      amount: selectedIncome.amount,
+                      ...selectedIncome,
                       sourceId: value,
-                      date: selectedIncome.date,
                     });
                   }}
                   required
