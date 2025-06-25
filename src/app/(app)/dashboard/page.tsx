@@ -76,6 +76,14 @@ export default function DashboardPage() {
     name: "",
   });
 
+  const [isAddReceivableOpen, setIsAddReceivableOpen] = useState(false);
+  const [newReceivable, setNewReceivable] = useState({
+    amount: 0,
+    name: "",
+    purpose: "",
+    date: format(new Date(), "yyyy-MM-dd"),
+  });
+
   const router = useRouter();
 
   // TRPC hooks
@@ -95,6 +103,8 @@ export default function DashboardPage() {
     api.investment.getTotalInvestmentForSpecificMonth.useQuery({
       date: format(selectedMonthForInvestment, "yyyy-MM-dd"),
     });
+  const { data: totalReceivableAmount, isLoading: isLoadingReceivables } =
+    api.receivable.getTotalReceivableAmount.useQuery();
   const utils = api.useUtils();
 
   const addIncome = api.income.addIncome.useMutation({
@@ -129,6 +139,16 @@ export default function DashboardPage() {
       setIsAddInvestmentOpen(false);
       await utils.investment.getTotalInvestmentForSpecificMonth.invalidate();
       await utils.investment.getInvestmentStatementsForSpecificMonth.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const addReceivable = api.receivable.addReceivable.useMutation({
+    onSuccess: async () => {
+      toast.success("Receivable added successfully");
+      await utils.receivable.getTotalReceivableAmount.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -206,7 +226,20 @@ export default function DashboardPage() {
         name: "",
       });
     }
-  }, [isAddIncomeOpen, isAddSpendOpen, isAddInvestmentOpen]);
+    if (!isAddReceivableOpen) {
+      setNewReceivable({
+        amount: 0,
+        name: "",
+        purpose: "",
+        date: format(new Date(), "yyyy-MM-dd"),
+      });
+    }
+  }, [
+    isAddIncomeOpen,
+    isAddSpendOpen,
+    isAddInvestmentOpen,
+    isAddReceivableOpen,
+  ]);
 
   return (
     <div className="p-4 md:p-6">
@@ -214,7 +247,7 @@ export default function DashboardPage() {
 
       {/* Monthly Income Card */}
       <Card
-        className="mb-8"
+        className="mb-6"
         onClick={() =>
           !isAddIncomeOpen &&
           router.push(
@@ -373,7 +406,7 @@ export default function DashboardPage() {
 
       {/* Monthly Spend Card */}
       <Card
-        className="mb-8"
+        className="mb-6"
         onClick={() =>
           !isAddSpendOpen &&
           router.push(
@@ -540,7 +573,7 @@ export default function DashboardPage() {
 
       {/* Monthly Investment Card */}
       <Card
-        className="mb-8"
+        className="mb-6"
         onClick={() =>
           !isAddInvestmentOpen &&
           router.push(
@@ -706,6 +739,150 @@ export default function DashboardPage() {
                 <DialogFooter>
                   <Button type="submit" disabled={addInvestment.isPending}>
                     {addInvestment.isPending ? "Adding..." : "Add Investment"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </CardFooter>
+      </Card>
+
+      {/* All Receivables Card */}
+      <Card onClick={() => !isAddReceivableOpen && router.push("/receivables")}>
+        <CardHeader>
+          <CardTitle>All Receivables</CardTitle>
+          <CardDescription className="mt-1">
+            Total amount to be received
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">
+            {isLoadingReceivables ? (
+              <Skeleton className="h-8 w-32" />
+            ) : (
+              `₹ ${totalReceivableAmount?.toLocaleString()}`
+            )}
+          </div>
+        </CardContent>
+        <CardFooter className="justify-end">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsAddReceivableOpen(true);
+                }}
+              >
+                <Plus className="h-4 w-4" /> Add Receivable
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Receivable</DialogTitle>
+                <DialogDescription>
+                  Enter the details to add a new receivable.
+                </DialogDescription>
+              </DialogHeader>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  addReceivable.mutate({
+                    amount: Number(newReceivable.amount),
+                    name: newReceivable.name,
+                    purpose: newReceivable.purpose,
+                    date: newReceivable.date,
+                  });
+                }}
+              >
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="amount">Amount</Label>
+                    <Input
+                      id="amount"
+                      type="number"
+                      value={newReceivable.amount}
+                      onChange={(e) =>
+                        setNewReceivable({
+                          ...newReceivable,
+                          amount: Number(e.target.value),
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      value={newReceivable.name}
+                      onChange={(e) =>
+                        setNewReceivable({
+                          ...newReceivable,
+                          name: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="purpose">Purpose</Label>
+                    <Input
+                      id="purpose"
+                      value={newReceivable.purpose}
+                      onChange={(e) =>
+                        setNewReceivable({
+                          ...newReceivable,
+                          purpose: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="date">Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !newReceivable.date && "text-muted-foreground",
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {newReceivable.date ? (
+                            format(new Date(newReceivable.date), "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={new Date(newReceivable.date)}
+                          onSelect={(date) =>
+                            setNewReceivable({
+                              ...newReceivable,
+                              date: date
+                                ? format(date, "yyyy-MM-dd")
+                                : format(
+                                    new Date(newReceivable.date),
+                                    "yyyy-MM-dd",
+                                  ),
+                            })
+                          }
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit" disabled={addReceivable.isPending}>
+                    {addReceivable.isPending ? "Adding..." : "Add Receivable"}
                   </Button>
                 </DialogFooter>
               </form>
