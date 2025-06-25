@@ -6,8 +6,12 @@ import { db } from "~/server/db";
 import { spendCategories, spends } from "~/server/db/schema";
 
 export const spendRouter = createTRPCRouter({
-  getSpendCategories: publicProcedure.query(async () => {
-    return db.select().from(spendCategories).orderBy(spendCategories.name);
+  getSpendCategories: publicProcedure.query(async ({ ctx }) => {
+    return db
+      .select()
+      .from(spendCategories)
+      .where(eq(spendCategories.userId, ctx.userId))
+      .orderBy(spendCategories.name);
   }),
 
   getSpendStatementsForSpecificMonth: publicProcedure
@@ -16,21 +20,24 @@ export const spendRouter = createTRPCRouter({
         date: z.string(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { date } = input;
 
       return db
         .select()
         .from(spends)
         .where(
-          sql`DATE_TRUNC('month', ${spends.date}::date) = DATE_TRUNC('month', ${date}::date)`,
+          and(
+            sql`DATE_TRUNC('month', ${spends.date}::date) = DATE_TRUNC('month', ${date}::date)`,
+            eq(spends.userId, ctx.userId),
+          ),
         )
         .orderBy(spends.date);
     }),
 
   getSpendStatementsForSpecificCategoryAndMonth: publicProcedure
     .input(z.object({ categoryId: z.string(), date: z.string() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { categoryId, date } = input;
       return db
         .select()
@@ -39,6 +46,7 @@ export const spendRouter = createTRPCRouter({
           and(
             eq(spends.categoryId, categoryId),
             sql`DATE_TRUNC('month', ${spends.date}::date) = DATE_TRUNC('month', ${date}::date)`,
+            eq(spends.userId, ctx.userId),
           ),
         )
         .orderBy(desc(spends.date));
@@ -50,7 +58,7 @@ export const spendRouter = createTRPCRouter({
         date: z.string(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { date } = input;
 
       const result = await db
@@ -59,19 +67,23 @@ export const spendRouter = createTRPCRouter({
         })
         .from(spends)
         .where(
-          sql`DATE_TRUNC('month', ${spends.date}::date) = DATE_TRUNC('month', ${date}::date)`,
+          and(
+            sql`DATE_TRUNC('month', ${spends.date}::date) = DATE_TRUNC('month', ${date}::date)`,
+            eq(spends.userId, ctx.userId),
+          ),
         );
 
       return result[0]?.totalAmount ?? 0;
     }),
 
-  getTotalSpendForAllCategories: publicProcedure.query(async () => {
+  getTotalSpendForAllCategories: publicProcedure.query(async ({ ctx }) => {
     const stats = await db
       .select({
         categoryId: spends.categoryId,
         totalAmount: sql<number>`sum(${spends.amount})`,
       })
       .from(spends)
+      .where(eq(spends.userId, ctx.userId))
       .groupBy(spends.categoryId);
 
     return stats;
@@ -86,7 +98,7 @@ export const spendRouter = createTRPCRouter({
         name: z.string(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { amount, categoryId, date, name } = input;
 
       await db.insert(spends).values({
@@ -94,6 +106,7 @@ export const spendRouter = createTRPCRouter({
         amount,
         categoryId,
         name,
+        userId: ctx.userId,
       });
     }),
 
@@ -107,50 +120,67 @@ export const spendRouter = createTRPCRouter({
         name: z.string(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { id, amount, categoryId, date, name } = input;
 
       await db
         .update(spends)
         .set({ amount, categoryId, date, name })
-        .where(eq(spends.id, id));
+        .where(and(eq(spends.id, id), eq(spends.userId, ctx.userId)));
     }),
 
   deleteSpend: publicProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { id } = input;
 
-      await db.delete(spends).where(eq(spends.id, id));
+      await db
+        .delete(spends)
+        .where(and(eq(spends.id, id), eq(spends.userId, ctx.userId)));
     }),
 
   addSpendCategory: publicProcedure
     .input(z.object({ name: z.string() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { name } = input;
 
       await db.insert(spendCategories).values({
         name,
+        userId: ctx.userId,
       });
     }),
 
   editSpendCategory: publicProcedure
     .input(z.object({ id: z.string(), name: z.string() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { id, name } = input;
 
       await db
         .update(spendCategories)
         .set({ name })
-        .where(eq(spendCategories.id, id));
+        .where(
+          and(
+            eq(spendCategories.id, id),
+            eq(spendCategories.userId, ctx.userId),
+          ),
+        );
     }),
 
   deleteSpendCategory: publicProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { id } = input;
 
-      await db.delete(spends).where(eq(spends.categoryId, id));
-      await db.delete(spendCategories).where(eq(spendCategories.id, id));
+      await db
+        .delete(spends)
+        .where(and(eq(spends.categoryId, id), eq(spends.userId, ctx.userId)));
+      await db
+        .delete(spendCategories)
+        .where(
+          and(
+            eq(spendCategories.id, id),
+            eq(spendCategories.userId, ctx.userId),
+          ),
+        );
     }),
 });

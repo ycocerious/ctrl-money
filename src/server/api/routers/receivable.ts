@@ -1,18 +1,23 @@
-import { eq, sum } from "drizzle-orm";
+import { and, eq, sum } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { receivables } from "~/server/db/schema";
 
 export const receivableRouter = createTRPCRouter({
-  getAllReceivables: publicProcedure.query(async () => {
-    return db.select().from(receivables).orderBy(receivables.date);
+  getAllReceivables: publicProcedure.query(async ({ ctx }) => {
+    return db
+      .select()
+      .from(receivables)
+      .where(eq(receivables.userId, ctx.userId))
+      .orderBy(receivables.date);
   }),
 
-  getTotalReceivableAmount: publicProcedure.query(async () => {
+  getTotalReceivableAmount: publicProcedure.query(async ({ ctx }) => {
     const totalReceivableAmount = await db
       .select({ total: sum(receivables.amount) })
-      .from(receivables);
+      .from(receivables)
+      .where(eq(receivables.userId, ctx.userId));
     return totalReceivableAmount?.[0]?.total ?? 0;
   }),
 
@@ -25,8 +30,8 @@ export const receivableRouter = createTRPCRouter({
         date: z.string(),
       }),
     )
-    .mutation(async ({ input }) => {
-      return db.insert(receivables).values(input);
+    .mutation(async ({ input, ctx }) => {
+      return db.insert(receivables).values({ ...input, userId: ctx.userId });
     }),
 
   editReceivable: publicProcedure
@@ -39,11 +44,13 @@ export const receivableRouter = createTRPCRouter({
         date: z.string(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       return db
         .update(receivables)
         .set(input)
-        .where(eq(receivables.id, input.id));
+        .where(
+          and(eq(receivables.id, input.id), eq(receivables.userId, ctx.userId)),
+        );
     }),
 
   deleteReceivable: publicProcedure
@@ -52,7 +59,11 @@ export const receivableRouter = createTRPCRouter({
         id: z.string(),
       }),
     )
-    .mutation(async ({ input }) => {
-      return db.delete(receivables).where(eq(receivables.id, input.id));
+    .mutation(async ({ input, ctx }) => {
+      return db
+        .delete(receivables)
+        .where(
+          and(eq(receivables.id, input.id), eq(receivables.userId, ctx.userId)),
+        );
     }),
 });

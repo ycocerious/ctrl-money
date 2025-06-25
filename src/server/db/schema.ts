@@ -1,5 +1,12 @@
 import { relations } from "drizzle-orm";
-import { date, index, integer, pgTable, text } from "drizzle-orm/pg-core";
+import {
+  date,
+  index,
+  integer,
+  pgTable,
+  text,
+  varchar,
+} from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
 
 const commonIdSchema = (columnName: string) =>
@@ -17,6 +24,7 @@ export const incomes = pgTable(
       .notNull()
       .references(() => incomeSources.id),
     date: date("date").notNull(),
+    userId: varchar("user_id").notNull(),
   },
   (table) => [index("income_dateIndex").on(table.date)],
 );
@@ -24,6 +32,7 @@ export const incomes = pgTable(
 export const incomeSources = pgTable("income_sources", {
   id: commonIdSchema("id").primaryKey(),
   name: text("name").notNull(),
+  userId: varchar("user_id").notNull(),
 });
 
 export const spends = pgTable(
@@ -36,6 +45,7 @@ export const spends = pgTable(
       .notNull()
       .references(() => spendCategories.id),
     date: date("date").notNull(),
+    userId: varchar("user_id").notNull(),
   },
   (table) => [index("spend_dateIndex").on(table.date)],
 );
@@ -43,6 +53,7 @@ export const spends = pgTable(
 export const spendCategories = pgTable("spend_categories", {
   id: commonIdSchema("id").primaryKey(),
   name: text("name").notNull(),
+  userId: varchar("user_id").notNull(),
 });
 
 export const investments = pgTable(
@@ -55,6 +66,7 @@ export const investments = pgTable(
       .notNull()
       .references(() => investmentAssets.id),
     date: date("date").notNull(),
+    userId: varchar("user_id").notNull(),
   },
   (table) => [index("investment_dateIndex").on(table.date)],
 );
@@ -62,6 +74,7 @@ export const investments = pgTable(
 export const investmentAssets = pgTable("investment_assets", {
   id: commonIdSchema("id").primaryKey(),
   name: text("name").notNull(),
+  userId: varchar("user_id").notNull(),
 });
 
 export const receivables = pgTable("receivables", {
@@ -70,6 +83,7 @@ export const receivables = pgTable("receivables", {
   name: text("name").notNull(),
   purpose: text("purpose").notNull(),
   date: date("date").notNull(),
+  userId: varchar("user_id").notNull(),
 });
 
 //relations
