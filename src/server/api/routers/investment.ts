@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
@@ -28,19 +28,14 @@ export const investmentRouter = createTRPCRouter({
         .orderBy(investments.date);
     }),
 
-  getInvestmentStatementsForSpecificAssetAndMonth: publicProcedure
-    .input(z.object({ assetId: z.string(), date: z.string() }))
+  getInvestmentStatementsForSpecificAsset: publicProcedure
+    .input(z.object({ assetId: z.string() }))
     .query(async ({ input }) => {
-      const { assetId, date } = input;
+      const { assetId } = input;
       return db
         .select()
         .from(investments)
-        .where(
-          and(
-            eq(investments.assetId, assetId),
-            sql`DATE_TRUNC('month', ${investments.date}::date) = DATE_TRUNC('month', ${date}::date)`,
-          ),
-        )
+        .where(eq(investments.assetId, assetId))
         .orderBy(desc(investments.date));
     }),
 
