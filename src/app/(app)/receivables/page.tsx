@@ -40,6 +40,7 @@ export default function ReceivablesPage() {
       toast.success("Receivable updated successfully");
       setIsEditReceivableOpen(false);
       await utils.receivable.getAllReceivables.invalidate();
+      await utils.receivable.getTotalReceivableAmount.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -50,6 +51,7 @@ export default function ReceivablesPage() {
     onSuccess: async () => {
       toast.success("Receivable deleted successfully");
       await utils.receivable.getAllReceivables.invalidate();
+      await utils.receivable.getTotalReceivableAmount.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);

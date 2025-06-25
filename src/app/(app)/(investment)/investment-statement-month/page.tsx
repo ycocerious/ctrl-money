@@ -56,6 +56,8 @@ export default function InvestmentStatementMonthPage() {
       setIsEditInvestmentOpen(false);
       await utils.investment.getInvestmentStatementsForSpecificMonth.invalidate();
       await utils.investment.getInvestmentStatementsForSpecificAsset.invalidate();
+      await utils.investment.getTotalInvestmentForSpecificMonth.invalidate();
+      await utils.investment.getTotalInvestmentForAllAssets.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -67,6 +69,8 @@ export default function InvestmentStatementMonthPage() {
       toast.success("Investment deleted successfully");
       await utils.investment.getInvestmentStatementsForSpecificMonth.invalidate();
       await utils.investment.getInvestmentStatementsForSpecificAsset.invalidate();
+      await utils.investment.getTotalInvestmentForSpecificMonth.invalidate();
+      await utils.investment.getTotalInvestmentForAllAssets.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);

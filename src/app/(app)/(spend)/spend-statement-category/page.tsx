@@ -71,6 +71,8 @@ export default function SpendStatementCategoryPage() {
       setIsEditSpendOpen(false);
       await utils.spend.getSpendStatementsForSpecificCategoryAndMonth.invalidate();
       await utils.spend.getSpendStatementsForSpecificMonth.invalidate();
+      await utils.spend.getTotalSpendForSpecificMonth.invalidate();
+      await utils.spend.getTotalSpendForAllCategories.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -82,6 +84,8 @@ export default function SpendStatementCategoryPage() {
       toast.success("Spend deleted successfully");
       await utils.spend.getSpendStatementsForSpecificCategoryAndMonth.invalidate();
       await utils.spend.getSpendStatementsForSpecificMonth.invalidate();
+      await utils.spend.getTotalSpendForSpecificMonth.invalidate();
+      await utils.spend.getTotalSpendForAllCategories.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
