@@ -148,6 +148,7 @@ export default function DashboardPage() {
   const addReceivable = api.receivable.addReceivable.useMutation({
     onSuccess: async () => {
       toast.success("Receivable added successfully");
+      setIsAddReceivableOpen(false);
       await utils.receivable.getTotalReceivableAmount.invalidate();
     },
     onError: (error) => {
@@ -198,6 +199,17 @@ export default function DashboardPage() {
       assetId: newInvestment.assetId,
       date: newInvestment.date,
       name: newInvestment.name,
+    });
+  };
+
+  // Handle receivable form submission
+  const handleAddReceivable = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    addReceivable.mutate({
+      amount: Number(newReceivable.amount),
+      date: newReceivable.date,
+      name: newReceivable.name,
+      purpose: newReceivable.purpose,
     });
   };
 
@@ -772,7 +784,10 @@ export default function DashboardPage() {
           </div>
         </CardContent>
         <CardFooter className="justify-end">
-          <Dialog>
+          <Dialog
+            open={isAddReceivableOpen}
+            onOpenChange={setIsAddReceivableOpen}
+          >
             <DialogTrigger asChild>
               <Button
                 className="gap-2"
@@ -792,17 +807,7 @@ export default function DashboardPage() {
                   Enter the details to add a new receivable.
                 </DialogDescription>
               </DialogHeader>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  addReceivable.mutate({
-                    amount: Number(newReceivable.amount),
-                    name: newReceivable.name,
-                    purpose: newReceivable.purpose,
-                    date: newReceivable.date,
-                  });
-                }}
-              >
+              <form onSubmit={handleAddReceivable}>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
                     <Label htmlFor="amount">Amount</Label>
