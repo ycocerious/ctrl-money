@@ -18,9 +18,7 @@ export const incomes = pgTable(
       .references(() => incomeSources.id),
     date: date("date").notNull(),
   },
-  (table) => ({
-    dateIndex: index("income_dateIndex").on(table.date),
-  }),
+  (table) => [index("income_dateIndex").on(table.date)],
 );
 
 export const incomeSources = pgTable("income_sources", {
@@ -38,9 +36,7 @@ export const spends = pgTable(
       .references(() => spendCategories.id),
     date: date("date").notNull(),
   },
-  (table) => ({
-    dateIndex: index("spend_dateIndex").on(table.date),
-  }),
+  (table) => [index("spend_dateIndex").on(table.date)],
 );
 
 export const spendCategories = pgTable("spend_categories", {
