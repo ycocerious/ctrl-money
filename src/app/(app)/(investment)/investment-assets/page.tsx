@@ -118,7 +118,7 @@ export default function InvestmentAssetsPage() {
         <Dialog open={isAddAssetOpen} onOpenChange={setIsAddAssetOpen}>
           <DialogTrigger asChild>
             <Button className="gap-1">
-              <Plus className="h-4 w-4" /> Add Asset
+              <Plus className="h-4 w-4" /> Add
             </Button>
           </DialogTrigger>
           <DialogContent>
