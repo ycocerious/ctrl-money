@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { CalendarIcon, Pencil, Trash2 } from "lucide-react";
+import { CalendarIcon, Filter, Pencil, Trash2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
@@ -39,6 +39,7 @@ export default function SpendStatementMonthPage() {
     searchParams.get("month") ?? format(new Date(), "yyyy-MM-dd");
   const [isEditSpendOpen, setIsEditSpendOpen] = useState(false);
   const [selectedSpend, setSelectedSpend] = useState<SpendSelect | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   // TRPC hooks
   const { data: spendCategories } = api.spend.getSpendCategories.useQuery();
@@ -75,9 +76,13 @@ export default function SpendStatementMonthPage() {
     },
   });
 
+  const filteredSpends = spendsForSelectedMonth?.filter(
+    (spend) =>
+      selectedCategory === "all" || spend.categoryId === selectedCategory,
+  );
+
   const totalSpendForMonth =
-    spendsForSelectedMonth?.reduce((total, spend) => total + spend.amount, 0) ??
-    0;
+    filteredSpends?.reduce((total, spend) => total + spend.amount, 0) ?? 0;
 
   const handleEditSpend = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -103,9 +108,27 @@ export default function SpendStatementMonthPage() {
       {/* Monthly Spends Detail */}
       <div className="h-[calc(100vh-120px)] rounded-lg border">
         <div className="bg-background sticky top-0 border-b px-4 pt-4">
-          <h2 className="font-semibold">
-            Spend Statement - {format(selectedMonth, "MMMM yyyy")}
-          </h2>
+          <div className="mb-1 flex items-center justify-between">
+            <h2 className="font-semibold">
+              Spend Statement - {format(selectedMonth, "MMMM yyyy")}
+            </h2>
+            <Select
+              value={selectedCategory}
+              onValueChange={setSelectedCategory}
+            >
+              <SelectTrigger className="h-10 w-10">
+                <Filter className="h-4 w-4" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All categories</SelectItem>
+                {spendCategories?.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="flex justify-between">
             <p className="text-muted-foreground mb-4">
               Total:{" "}
@@ -114,7 +137,7 @@ export default function SpendStatementMonthPage() {
               </span>
             </p>
             <p className="text-muted-foreground">
-              Count: {spendsForSelectedMonth?.length ?? 0}
+              Count: {filteredSpends?.length ?? 0}
             </p>
           </div>
         </div>
@@ -127,9 +150,9 @@ export default function SpendStatementMonthPage() {
                   <Skeleton key={i} className="h-16 w-full" />
                 ))}
               </div>
-            ) : spendsForSelectedMonth?.length ? (
+            ) : filteredSpends?.length ? (
               <div className="space-y-3">
-                {spendsForSelectedMonth.map((spend) => {
+                {filteredSpends.map((spend) => {
                   const category = spendCategories?.find(
                     (c) => c.id === spend.categoryId,
                   );
@@ -177,7 +200,9 @@ export default function SpendStatementMonthPage() {
             ) : (
               <div className="py-4 text-center">
                 <p className="text-muted-foreground">
-                  No spend entries for this month.
+                  {spendsForSelectedMonth?.length
+                    ? "No spends match the current filters."
+                    : "No spend entries for this month."}
                 </p>
               </div>
             )}
