@@ -84,7 +84,8 @@ export const spendRouter = createTRPCRouter({
       })
       .from(spends)
       .where(eq(spends.userId, ctx.userId))
-      .groupBy(spends.categoryId);
+      .groupBy(spends.categoryId)
+      .orderBy(desc(sql<number>`sum(${spends.amount})`));
 
     return stats;
   }),

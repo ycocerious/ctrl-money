@@ -80,7 +80,8 @@ export const incomeRouter = createTRPCRouter({
       })
       .from(incomes)
       .where(eq(incomes.userId, ctx.userId))
-      .groupBy(incomes.sourceId);
+      .groupBy(incomes.sourceId)
+      .orderBy(desc(sql<number>`sum(${incomes.amount})`));
 
     return stats;
   }),

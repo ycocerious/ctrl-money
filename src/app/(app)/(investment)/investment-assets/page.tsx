@@ -161,57 +161,63 @@ export default function InvestmentAssetsPage() {
         </div>
       ) : investmentAssets?.length ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {investmentAssets.map((asset) => (
-            <Card
-              key={asset.id}
-              className="hover:bg-accent/50 cursor-pointer transition-colors"
-              onClick={() =>
-                !isEditAssetOpen &&
-                router.push(`/investment-statement-asset?assetId=${asset.id}`)
-              }
-            >
-              <CardHeader>
-                <CardTitle className="text-lg">{asset.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  ₹{" "}
-                  {new Intl.NumberFormat("en-IN", {
-                    maximumFractionDigits: 0,
-                    style: "decimal",
-                  }).format(getTotalForAsset(asset.id))}
-                </div>
-                <p className="text-muted-foreground text-sm">
-                  Total investment in this asset
-                </p>
-              </CardContent>
-              <CardFooter className="justify-end">
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedAsset(asset);
-                      setIsEditAssetOpen(true);
-                    }}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteAsset(asset.id);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardFooter>
-            </Card>
-          ))}
+          {totalInvestments?.map((investment) => {
+            const asset = investmentAssets?.find(
+              (a) => a.id === investment.assetId,
+            );
+            if (!asset) return null;
+            return (
+              <Card
+                key={asset.id}
+                className="hover:bg-accent/50 cursor-pointer transition-colors"
+                onClick={() =>
+                  !isEditAssetOpen &&
+                  router.push(`/investment-statement-asset?assetId=${asset.id}`)
+                }
+              >
+                <CardHeader>
+                  <CardTitle className="text-lg">{asset.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    ₹{" "}
+                    {new Intl.NumberFormat("en-IN", {
+                      maximumFractionDigits: 0,
+                      style: "decimal",
+                    }).format(getTotalForAsset(asset.id))}
+                  </div>
+                  <p className="text-muted-foreground text-sm">
+                    Total investment in this asset
+                  </p>
+                </CardContent>
+                <CardFooter className="justify-end">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedAsset(asset);
+                        setIsEditAssetOpen(true);
+                      }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteAsset(asset.id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       ) : (
         <div className="rounded-lg border p-8 text-center">
