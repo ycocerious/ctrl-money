@@ -64,6 +64,14 @@ export const investmentAssets = pgTable("investment_assets", {
   name: text("name").notNull(),
 });
 
+export const receivables = pgTable("receivables", {
+  id: commonIdSchema("id").primaryKey(),
+  amount: integer("amount").notNull(),
+  name: text("name").notNull(),
+  purpose: text("purpose").notNull(),
+  date: date("date").notNull(),
+});
+
 //relations
 export const incomeRelations = relations(incomes, ({ one }) => ({
   source: one(incomeSources, {
@@ -104,3 +112,6 @@ export type InvestmentInsert = typeof investments.$inferInsert;
 
 export type InvestmentAssetSelect = typeof investmentAssets.$inferSelect;
 export type InvestmentAssetInsert = typeof investmentAssets.$inferInsert;
+
+export type ReceivableSelect = typeof receivables.$inferSelect;
+export type ReceivableInsert = typeof receivables.$inferInsert;

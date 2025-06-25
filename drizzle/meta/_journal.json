@@ -50,6 +50,13 @@
       "when": 1750834445228,
       "tag": "0006_cultured_thanos",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1750841483851,
+      "tag": "0007_faithful_daredevil",
+      "breakpoints": true
     }
   ]
 }
