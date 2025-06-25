@@ -1,14 +1,7 @@
 // app/(dashboard)/layout.tsx
 "use client";
 
-import {
-  BarChart3,
-  Home,
-  LayoutDashboard,
-  Menu,
-  PieChart,
-  Wallet,
-} from "lucide-react";
+import { Home, LayoutDashboard, Menu, PieChart, Wallet } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -32,11 +25,11 @@ const sidebarItems = [
     href: "/spend-categories",
     icon: <Wallet className="h-5 w-5" />,
   },
-  {
-    title: "Investment Assets",
-    href: "/investment-assets",
-    icon: <BarChart3 className="h-5 w-5" />,
-  },
+  // {
+  //   title: "Investment Assets",
+  //   href: "/investment-assets",
+  //   icon: <BarChart3 className="h-5 w-5" />,
+  // },
 ];
 
 export default function DashboardLayout({

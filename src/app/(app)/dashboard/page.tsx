@@ -11,6 +11,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
@@ -283,119 +284,125 @@ export default function DashboardPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between text-3xl font-bold">
+          <div className="text-3xl font-bold">
             {isLoadingIncomes ? (
               <Skeleton className="h-8 w-32" />
             ) : (
-              `₹ ${totalIncomeForMonth?.toLocaleString()}`
+              `₹ ${new Intl.NumberFormat("en-IN", {
+                maximumFractionDigits: 0,
+                style: "decimal",
+              }).format(totalIncomeForMonth ?? 0)}`
             )}
-            <Dialog open={isAddIncomeOpen} onOpenChange={setIsAddIncomeOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  className="gap-2 bg-purple-800 text-white"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsAddIncomeOpen(true);
-                  }}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add New Income</DialogTitle>
-                  <DialogDescription>
-                    Enter the details to add a new income.
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleAddIncome}>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="amount">Amount</Label>
-                      <Input
-                        id="amount"
-                        type="number"
-                        value={newIncome.amount}
-                        onChange={(e) =>
-                          setNewIncome({
-                            ...newIncome,
-                            amount: Number(e.target.value),
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="source">Source</Label>
-                      <Select
-                        value={newIncome.sourceId}
-                        onValueChange={(value: string) =>
-                          setNewIncome({ ...newIncome, sourceId: value })
-                        }
-                        required
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select an income source" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {incomeSources?.map((source) => (
-                            <SelectItem key={source.id} value={source.id}>
-                              {source.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="date">Date</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !newIncome.date && "text-muted-foreground",
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {newIncome.date ? (
-                              format(new Date(newIncome.date), "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={new Date(newIncome.date)}
-                            onSelect={(date) =>
-                              setNewIncome({
-                                ...newIncome,
-                                date: date
-                                  ? format(date, "yyyy-MM-dd")
-                                  : format(
-                                      new Date(newIncome.date),
-                                      "yyyy-MM-dd",
-                                    ),
-                              })
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button type="submit" disabled={addIncome.isPending}>
-                      {addIncome.isPending ? "Adding..." : "Add Income"}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
           </div>
         </CardContent>
+        <CardFooter className="justify-end">
+          <Dialog open={isAddIncomeOpen} onOpenChange={setIsAddIncomeOpen}>
+            <DialogTrigger asChild>
+              <Button
+                className="gap-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsAddIncomeOpen(true);
+                }}
+              >
+                <Plus className="h-4 w-4" />
+                Add Income
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Income</DialogTitle>
+                <DialogDescription>
+                  Enter the details to add a new income.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleAddIncome}>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="amount">Amount</Label>
+                    <Input
+                      id="amount"
+                      type="number"
+                      value={newIncome.amount}
+                      onChange={(e) =>
+                        setNewIncome({
+                          ...newIncome,
+                          amount: Number(e.target.value),
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="source">Source</Label>
+                    <Select
+                      value={newIncome.sourceId}
+                      onValueChange={(value: string) =>
+                        setNewIncome({ ...newIncome, sourceId: value })
+                      }
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an income source" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {incomeSources?.map((source) => (
+                          <SelectItem key={source.id} value={source.id}>
+                            {source.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="date">Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !newIncome.date && "text-muted-foreground",
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {newIncome.date ? (
+                            format(new Date(newIncome.date), "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={new Date(newIncome.date)}
+                          onSelect={(date) =>
+                            setNewIncome({
+                              ...newIncome,
+                              date: date
+                                ? format(date, "yyyy-MM-dd")
+                                : format(
+                                    new Date(newIncome.date),
+                                    "yyyy-MM-dd",
+                                  ),
+                            })
+                          }
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit" disabled={addIncome.isPending}>
+                    {addIncome.isPending ? "Adding..." : "Add Income"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </CardFooter>
       </Card>
 
       {/* Monthly Spend Card */}
@@ -439,134 +446,137 @@ export default function DashboardPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between text-3xl font-bold">
+          <div className="text-3xl font-bold">
             {isLoadingSpends ? (
               <Skeleton className="h-8 w-32" />
             ) : (
-              `₹ ${totalSpendForMonth?.toLocaleString()}`
+              `₹ ${new Intl.NumberFormat("en-IN", {
+                maximumFractionDigits: 0,
+                style: "decimal",
+              }).format(totalSpendForMonth ?? 0)}`
             )}
-            <Dialog open={isAddSpendOpen} onOpenChange={setIsAddSpendOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  className="gap-2 bg-purple-800 text-white"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsAddSpendOpen(true);
-                  }}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add New Spend</DialogTitle>
-                  <DialogDescription>
-                    Enter the details to add a new spend.
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleAddSpend}>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="amount">Amount</Label>
-                      <Input
-                        id="amount"
-                        type="number"
-                        value={newSpend.amount}
-                        onChange={(e) =>
-                          setNewSpend({
-                            ...newSpend,
-                            amount: Number(e.target.value),
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="name">Name</Label>
-                      <Input
-                        id="name"
-                        value={newSpend.name}
-                        onChange={(e) =>
-                          setNewSpend({ ...newSpend, name: e.target.value })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="category">Category</Label>
-                      <Select
-                        value={newSpend.categoryId}
-                        onValueChange={(value: string) =>
-                          setNewSpend({ ...newSpend, categoryId: value })
-                        }
-                        required
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a spend category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {spendCategories?.map((category) => (
-                            <SelectItem key={category.id} value={category.id}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="date">Date</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !newSpend.date && "text-muted-foreground",
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {newSpend.date ? (
-                              format(new Date(newSpend.date), "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={new Date(newSpend.date)}
-                            onSelect={(date) =>
-                              setNewSpend({
-                                ...newSpend,
-                                date: date
-                                  ? format(date, "yyyy-MM-dd")
-                                  : format(
-                                      new Date(newSpend.date),
-                                      "yyyy-MM-dd",
-                                    ),
-                              })
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button type="submit" disabled={addSpend.isPending}>
-                      {addSpend.isPending ? "Adding..." : "Add Spend"}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
           </div>
         </CardContent>
+        <CardFooter className="justify-end">
+          <Dialog open={isAddSpendOpen} onOpenChange={setIsAddSpendOpen}>
+            <DialogTrigger asChild>
+              <Button
+                className="gap-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsAddSpendOpen(true);
+                }}
+              >
+                <Plus className="h-4 w-4" />
+                Add Spend
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Spend</DialogTitle>
+                <DialogDescription>
+                  Enter the details to add a new spend.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleAddSpend}>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="amount">Amount</Label>
+                    <Input
+                      id="amount"
+                      type="number"
+                      value={newSpend.amount}
+                      onChange={(e) =>
+                        setNewSpend({
+                          ...newSpend,
+                          amount: Number(e.target.value),
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      value={newSpend.name}
+                      onChange={(e) =>
+                        setNewSpend({ ...newSpend, name: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Select
+                      value={newSpend.categoryId}
+                      onValueChange={(value: string) =>
+                        setNewSpend({ ...newSpend, categoryId: value })
+                      }
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a spend category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {spendCategories?.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="date">Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !newSpend.date && "text-muted-foreground",
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {newSpend.date ? (
+                            format(new Date(newSpend.date), "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={new Date(newSpend.date)}
+                          onSelect={(date) =>
+                            setNewSpend({
+                              ...newSpend,
+                              date: date
+                                ? format(date, "yyyy-MM-dd")
+                                : format(new Date(newSpend.date), "yyyy-MM-dd"),
+                            })
+                          }
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit" disabled={addSpend.isPending}>
+                    {addSpend.isPending ? "Adding..." : "Add Spend"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </CardFooter>
       </Card>
 
       {/* Monthly Investment Card */}
-      <Card
+      {/* <Card
         className="mb-6"
         onClick={() =>
           !isAddInvestmentOpen &&
@@ -610,7 +620,10 @@ export default function DashboardPage() {
             {isLoadingInvestments ? (
               <Skeleton className="h-8 w-32" />
             ) : (
-              `₹ ${totalInvestmentForMonth?.toLocaleString()}`
+              `₹ ${new Intl.NumberFormat("en-IN", {
+                maximumFractionDigits: 0,
+                style: "decimal",
+              }).format(totalInvestmentForMonth ?? 0)}`
             )}
             <Dialog
               open={isAddInvestmentOpen}
@@ -618,7 +631,7 @@ export default function DashboardPage() {
             >
               <DialogTrigger asChild>
                 <Button
-                  className="gap-2 bg-purple-800 text-white"
+                  className="gap-2"
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsAddInvestmentOpen(true);
@@ -736,7 +749,7 @@ export default function DashboardPage() {
             </Dialog>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* All Receivables Card */}
       <Card onClick={() => !isAddReceivableOpen && router.push("/receivables")}>
@@ -747,136 +760,142 @@ export default function DashboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between text-3xl font-bold">
+          <div className="text-3xl font-bold">
             {isLoadingReceivables ? (
               <Skeleton className="h-8 w-32" />
             ) : (
-              `₹ ${totalReceivableAmount?.toLocaleString()}`
+              `₹ ${new Intl.NumberFormat("en-IN", {
+                maximumFractionDigits: 0,
+                style: "decimal",
+              }).format(Number(totalReceivableAmount) ?? 0)}`
             )}
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button
-                  className="gap-2 bg-purple-800 text-white"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsAddReceivableOpen(true);
-                  }}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add New Receivable</DialogTitle>
-                  <DialogDescription>
-                    Enter the details to add a new receivable.
-                  </DialogDescription>
-                </DialogHeader>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    addReceivable.mutate({
-                      amount: Number(newReceivable.amount),
-                      name: newReceivable.name,
-                      purpose: newReceivable.purpose,
-                      date: newReceivable.date,
-                    });
-                  }}
-                >
-                  <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="amount">Amount</Label>
-                      <Input
-                        id="amount"
-                        type="number"
-                        value={newReceivable.amount}
-                        onChange={(e) =>
-                          setNewReceivable({
-                            ...newReceivable,
-                            amount: Number(e.target.value),
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="name">Name</Label>
-                      <Input
-                        id="name"
-                        value={newReceivable.name}
-                        onChange={(e) =>
-                          setNewReceivable({
-                            ...newReceivable,
-                            name: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="purpose">Purpose</Label>
-                      <Input
-                        id="purpose"
-                        value={newReceivable.purpose}
-                        onChange={(e) =>
-                          setNewReceivable({
-                            ...newReceivable,
-                            purpose: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="date">Date</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !newReceivable.date && "text-muted-foreground",
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {newReceivable.date ? (
-                              format(new Date(newReceivable.date), "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={new Date(newReceivable.date)}
-                            onSelect={(date) =>
-                              setNewReceivable({
-                                ...newReceivable,
-                                date: date
-                                  ? format(date, "yyyy-MM-dd")
-                                  : format(
-                                      new Date(newReceivable.date),
-                                      "yyyy-MM-dd",
-                                    ),
-                              })
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button type="submit" disabled={addReceivable.isPending}>
-                      {addReceivable.isPending ? "Adding..." : "Add Receivable"}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
           </div>
         </CardContent>
+        <CardFooter className="justify-end">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                className="gap-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsAddReceivableOpen(true);
+                }}
+              >
+                <Plus className="h-4 w-4" />
+                Add Receivable
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Receivable</DialogTitle>
+                <DialogDescription>
+                  Enter the details to add a new receivable.
+                </DialogDescription>
+              </DialogHeader>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  addReceivable.mutate({
+                    amount: Number(newReceivable.amount),
+                    name: newReceivable.name,
+                    purpose: newReceivable.purpose,
+                    date: newReceivable.date,
+                  });
+                }}
+              >
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="amount">Amount</Label>
+                    <Input
+                      id="amount"
+                      type="number"
+                      value={newReceivable.amount}
+                      onChange={(e) =>
+                        setNewReceivable({
+                          ...newReceivable,
+                          amount: Number(e.target.value),
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      value={newReceivable.name}
+                      onChange={(e) =>
+                        setNewReceivable({
+                          ...newReceivable,
+                          name: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="purpose">Purpose</Label>
+                    <Input
+                      id="purpose"
+                      value={newReceivable.purpose}
+                      onChange={(e) =>
+                        setNewReceivable({
+                          ...newReceivable,
+                          purpose: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="date">Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !newReceivable.date && "text-muted-foreground",
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {newReceivable.date ? (
+                            format(new Date(newReceivable.date), "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={new Date(newReceivable.date)}
+                          onSelect={(date) =>
+                            setNewReceivable({
+                              ...newReceivable,
+                              date: date
+                                ? format(date, "yyyy-MM-dd")
+                                : format(
+                                    new Date(newReceivable.date),
+                                    "yyyy-MM-dd",
+                                  ),
+                            })
+                          }
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit" disabled={addReceivable.isPending}>
+                    {addReceivable.isPending ? "Adding..." : "Add Receivable"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </CardFooter>
       </Card>
     </div>
   );
