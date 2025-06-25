@@ -39,7 +39,7 @@ import { cn } from "~/lib/utils";
 import type { SpendSelect } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
-export default function SpendStatementPage() {
+export default function SpendStatementCategoryPage() {
   const searchParams = useSearchParams();
   const selectedCategoryId = searchParams.get("categoryId");
   const [isEditSpendOpen, setIsEditSpendOpen] = useState(false);

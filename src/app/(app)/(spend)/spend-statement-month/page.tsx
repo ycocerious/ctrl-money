@@ -33,7 +33,7 @@ import { cn } from "~/lib/utils";
 import type { SpendSelect } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
-export default function SpendStatementPage() {
+export default function SpendStatementMonthPage() {
   const searchParams = useSearchParams();
   const selectedMonth =
     searchParams.get("month") ?? format(new Date(), "yyyy-MM-dd");

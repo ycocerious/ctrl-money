@@ -33,7 +33,7 @@ import { cn } from "~/lib/utils";
 import type { IncomeSelect } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
-export default function IncomeStatementPage() {
+export default function IncomeStatementSourcePage() {
   const searchParams = useSearchParams();
   const selectedSourceId = searchParams.get("sourceId");
   const [isEditIncomeOpen, setIsEditIncomeOpen] = useState(false);
