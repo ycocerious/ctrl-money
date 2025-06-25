@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
-import { spend, spendCategories } from "~/server/db/schema";
+import { spendCategories, spends } from "~/server/db/schema";
 
 export const spendRouter = createTRPCRouter({
   getSpendCategories: publicProcedure.query(async () => {
@@ -21,11 +21,11 @@ export const spendRouter = createTRPCRouter({
 
       return db
         .select()
-        .from(spend)
+        .from(spends)
         .where(
-          sql`DATE_TRUNC('month', ${spend.date}::date) = DATE_TRUNC('month', ${date}::date)`,
+          sql`DATE_TRUNC('month', ${spends.date}::date) = DATE_TRUNC('month', ${date}::date)`,
         )
-        .orderBy(spend.date);
+        .orderBy(spends.date);
     }),
 
   getSpendStatementsForSpecificCategoryAndMonth: publicProcedure
@@ -34,14 +34,14 @@ export const spendRouter = createTRPCRouter({
       const { categoryId, date } = input;
       return db
         .select()
-        .from(spend)
+        .from(spends)
         .where(
           and(
-            eq(spend.categoryId, categoryId),
-            sql`DATE_TRUNC('month', ${spend.date}::date) = DATE_TRUNC('month', ${date}::date)`,
+            eq(spends.categoryId, categoryId),
+            sql`DATE_TRUNC('month', ${spends.date}::date) = DATE_TRUNC('month', ${date}::date)`,
           ),
         )
-        .orderBy(desc(spend.date));
+        .orderBy(desc(spends.date));
     }),
 
   getTotalSpendForSpecificMonth: publicProcedure
@@ -55,11 +55,11 @@ export const spendRouter = createTRPCRouter({
 
       const result = await db
         .select({
-          totalAmount: sql<number>`sum(${spend.amount})`,
+          totalAmount: sql<number>`sum(${spends.amount})`,
         })
-        .from(spend)
+        .from(spends)
         .where(
-          sql`DATE_TRUNC('month', ${spend.date}::date) = DATE_TRUNC('month', ${date}::date)`,
+          sql`DATE_TRUNC('month', ${spends.date}::date) = DATE_TRUNC('month', ${date}::date)`,
         );
 
       return result[0]?.totalAmount ?? 0;
@@ -68,11 +68,11 @@ export const spendRouter = createTRPCRouter({
   getTotalSpendForAllCategories: publicProcedure.query(async () => {
     const stats = await db
       .select({
-        categoryId: spend.categoryId,
-        totalAmount: sql<number>`sum(${spend.amount})`,
+        categoryId: spends.categoryId,
+        totalAmount: sql<number>`sum(${spends.amount})`,
       })
-      .from(spend)
-      .groupBy(spend.categoryId);
+      .from(spends)
+      .groupBy(spends.categoryId);
 
     return stats;
   }),
@@ -88,7 +88,7 @@ export const spendRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const { amount, categoryId, date } = input;
 
-      await db.insert(spend).values({
+      await db.insert(spends).values({
         date,
         amount,
         categoryId,
@@ -108,9 +108,9 @@ export const spendRouter = createTRPCRouter({
       const { id, amount, categoryId, date } = input;
 
       await db
-        .update(spend)
+        .update(spends)
         .set({ amount, categoryId, date })
-        .where(eq(spend.id, id));
+        .where(eq(spends.id, id));
     }),
 
   deleteSpend: publicProcedure
@@ -118,7 +118,7 @@ export const spendRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const { id } = input;
 
-      await db.delete(spend).where(eq(spend.id, id));
+      await db.delete(spends).where(eq(spends.id, id));
     }),
 
   addSpendCategory: publicProcedure
@@ -147,7 +147,7 @@ export const spendRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const { id } = input;
 
-      await db.delete(spend).where(eq(spend.categoryId, id));
+      await db.delete(spends).where(eq(spends.categoryId, id));
       await db.delete(spendCategories).where(eq(spendCategories.id, id));
     }),
 });

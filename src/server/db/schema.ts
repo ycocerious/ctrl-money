@@ -8,8 +8,8 @@ const commonIdSchema = (columnName: string) =>
     .$defaultFn(() => nanoid());
 
 //tables
-export const income = pgTable(
-  "income",
+export const incomes = pgTable(
+  "incomes",
   {
     id: commonIdSchema("id").primaryKey(),
     amount: integer("amount").notNull(),
@@ -28,8 +28,8 @@ export const incomeSources = pgTable("income_sources", {
   name: text("name").notNull(),
 });
 
-export const spend = pgTable(
-  "spend",
+export const spends = pgTable(
+  "spends",
   {
     id: commonIdSchema("id").primaryKey(),
     amount: integer("amount").notNull(),
@@ -49,29 +49,29 @@ export const spendCategories = pgTable("spend_categories", {
 });
 
 //relations
-export const incomeRelations = relations(income, ({ one }) => ({
+export const incomeRelations = relations(incomes, ({ one }) => ({
   source: one(incomeSources, {
-    fields: [income.sourceId],
+    fields: [incomes.sourceId],
     references: [incomeSources.id],
   }),
 }));
 
-export const spendRelations = relations(spend, ({ one }) => ({
+export const spendRelations = relations(spends, ({ one }) => ({
   category: one(spendCategories, {
-    fields: [spend.categoryId],
+    fields: [spends.categoryId],
     references: [spendCategories.id],
   }),
 }));
 
 //types
-export type IncomeSelect = typeof income.$inferSelect;
-export type IncomeInsert = typeof income.$inferInsert;
+export type IncomeSelect = typeof incomes.$inferSelect;
+export type IncomeInsert = typeof incomes.$inferInsert;
 
 export type IncomeSourceSelect = typeof incomeSources.$inferSelect;
 export type IncomeSourceInsert = typeof incomeSources.$inferInsert;
 
-export type SpendSelect = typeof spend.$inferSelect;
-export type SpendInsert = typeof spend.$inferInsert;
+export type SpendSelect = typeof spends.$inferSelect;
+export type SpendInsert = typeof spends.$inferInsert;
 
 export type SpendCategorySelect = typeof spendCategories.$inferSelect;
 export type SpendCategoryInsert = typeof spendCategories.$inferInsert;

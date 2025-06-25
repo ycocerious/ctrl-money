@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
-import { income, incomeSources } from "~/server/db/schema";
+import { incomes, incomeSources } from "~/server/db/schema";
 
 export const incomeRouter = createTRPCRouter({
   getIncomeSources: publicProcedure.query(async () => {
@@ -21,11 +21,11 @@ export const incomeRouter = createTRPCRouter({
 
       return db
         .select()
-        .from(income)
+        .from(incomes)
         .where(
-          sql`DATE_TRUNC('month', ${income.date}::date) = DATE_TRUNC('month', ${date}::date)`,
+          sql`DATE_TRUNC('month', ${incomes.date}::date) = DATE_TRUNC('month', ${date}::date)`,
         )
-        .orderBy(income.date);
+        .orderBy(incomes.date);
     }),
 
   getIncomeStatementsForSpecificSource: publicProcedure
@@ -34,9 +34,9 @@ export const incomeRouter = createTRPCRouter({
       const { sourceId } = input;
       return db
         .select()
-        .from(income)
-        .where(eq(income.sourceId, sourceId))
-        .orderBy(desc(income.date));
+        .from(incomes)
+        .where(eq(incomes.sourceId, sourceId))
+        .orderBy(desc(incomes.date));
     }),
 
   getTotalIncomeForSpecificMonth: publicProcedure
@@ -50,11 +50,11 @@ export const incomeRouter = createTRPCRouter({
 
       const result = await db
         .select({
-          totalAmount: sql<number>`sum(${income.amount})`,
+          totalAmount: sql<number>`sum(${incomes.amount})`,
         })
-        .from(income)
+        .from(incomes)
         .where(
-          sql`DATE_TRUNC('month', ${income.date}::date) = DATE_TRUNC('month', ${date}::date)`,
+          sql`DATE_TRUNC('month', ${incomes.date}::date) = DATE_TRUNC('month', ${date}::date)`,
         );
 
       return result[0]?.totalAmount ?? 0;
@@ -63,11 +63,11 @@ export const incomeRouter = createTRPCRouter({
   getTotalIncomeForAllSources: publicProcedure.query(async () => {
     const stats = await db
       .select({
-        sourceId: income.sourceId,
-        totalAmount: sql<number>`sum(${income.amount})`,
+        sourceId: incomes.sourceId,
+        totalAmount: sql<number>`sum(${incomes.amount})`,
       })
-      .from(income)
-      .groupBy(income.sourceId);
+      .from(incomes)
+      .groupBy(incomes.sourceId);
 
     return stats;
   }),
@@ -83,7 +83,7 @@ export const incomeRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const { amount, sourceId, date } = input;
 
-      await db.insert(income).values({
+      await db.insert(incomes).values({
         date,
         amount,
         sourceId,
@@ -103,9 +103,9 @@ export const incomeRouter = createTRPCRouter({
       const { id, amount, sourceId, date } = input;
 
       await db
-        .update(income)
+        .update(incomes)
         .set({ amount, sourceId, date })
-        .where(eq(income.id, id));
+        .where(eq(incomes.id, id));
     }),
 
   deleteIncome: publicProcedure
@@ -113,7 +113,7 @@ export const incomeRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const { id } = input;
 
-      await db.delete(income).where(eq(income.id, id));
+      await db.delete(incomes).where(eq(incomes.id, id));
     }),
 
   addIncomeSource: publicProcedure
@@ -142,7 +142,7 @@ export const incomeRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const { id } = input;
 
-      await db.delete(income).where(eq(income.sourceId, id));
+      await db.delete(incomes).where(eq(incomes.sourceId, id));
       await db.delete(incomeSources).where(eq(incomeSources.id, id));
     }),
 });
