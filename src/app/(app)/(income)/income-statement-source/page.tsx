@@ -49,7 +49,7 @@ export default function IncomeStatementSourcePage() {
 
   // TRPC hooks
   const { data: incomeSources } = api.income.getIncomeSources.useQuery();
-  const { data: incomesForSelectedMonth, isLoading: isLoadingIncomes } =
+  const { data: incomesForSelectedSource, isLoading: isLoadingIncomes } =
     api.income.getIncomeStatementsForSpecificSource.useQuery({
       sourceId: selectedSourceId,
     });
@@ -87,7 +87,7 @@ export default function IncomeStatementSourcePage() {
   });
 
   const totalIncomeForMonth =
-    incomesForSelectedMonth?.reduce(
+    incomesForSelectedSource?.reduce(
       (total, income) => total + income.amount,
       0,
     ) ?? 0;
@@ -126,7 +126,7 @@ export default function IncomeStatementSourcePage() {
               </span>
             </p>
             <p className="text-muted-foreground">
-              Count: {incomesForSelectedMonth?.length ?? 0}
+              Count: {incomesForSelectedSource?.length ?? 0}
             </p>
           </div>
         </div>
@@ -139,9 +139,9 @@ export default function IncomeStatementSourcePage() {
                   <Skeleton key={i} className="h-16 w-full" />
                 ))}
               </div>
-            ) : incomesForSelectedMonth?.length ? (
+            ) : incomesForSelectedSource?.length ? (
               <div className="space-y-3">
-                {incomesForSelectedMonth.map((income) => {
+                {incomesForSelectedSource.map((income) => {
                   const source = incomeSources?.find(
                     (s) => s.id === income.sourceId,
                   );

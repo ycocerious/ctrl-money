@@ -49,7 +49,7 @@ export default function InvestmentStatementAssetPage() {
   // TRPC hooks
   const { data: investmentAssets } =
     api.investment.getInvestmentAssets.useQuery();
-  const { data: investmentsForSelectedMonth, isLoading: isLoadingInvestments } =
+  const { data: investmentsForSelectedAsset, isLoading: isLoadingInvestments } =
     api.investment.getInvestmentStatementsForSpecificAsset.useQuery({
       assetId: selectedAssetId,
     });
@@ -87,7 +87,7 @@ export default function InvestmentStatementAssetPage() {
   });
 
   const totalInvestmentForMonth =
-    investmentsForSelectedMonth?.reduce(
+    investmentsForSelectedAsset?.reduce(
       (total, investment) => total + investment.amount,
       0,
     ) ?? 0;
@@ -127,7 +127,7 @@ export default function InvestmentStatementAssetPage() {
               </span>
             </p>
             <p className="text-muted-foreground">
-              Count: {investmentsForSelectedMonth?.length ?? 0}
+              Count: {investmentsForSelectedAsset?.length ?? 0}
             </p>
           </div>
         </div>
@@ -140,9 +140,9 @@ export default function InvestmentStatementAssetPage() {
                   <Skeleton key={i} className="h-16 w-full" />
                 ))}
               </div>
-            ) : investmentsForSelectedMonth?.length ? (
+            ) : investmentsForSelectedAsset?.length ? (
               <div className="space-y-3">
-                {investmentsForSelectedMonth.map((investment) => {
+                {investmentsForSelectedAsset.map((investment) => {
                   const asset = investmentAssets?.find(
                     (a) => a.id === investment.assetId,
                   );

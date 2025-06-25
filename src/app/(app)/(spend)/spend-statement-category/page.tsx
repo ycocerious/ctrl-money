@@ -54,11 +54,13 @@ export default function SpendStatementCategoryPage() {
 
   // TRPC hooks
   const { data: spendCategories } = api.spend.getSpendCategories.useQuery();
-  const { data: spendsForSelectedMonth, isLoading: isLoadingSpends } =
-    api.spend.getSpendStatementsForSpecificCategoryAndMonth.useQuery({
-      categoryId: selectedCategoryId,
-      date: format(selectedMonth, "yyyy-MM-dd"),
-    });
+  const {
+    data: spendsForSelectedCategoryAndMonth,
+    isLoading: isLoadingSpends,
+  } = api.spend.getSpendStatementsForSpecificCategoryAndMonth.useQuery({
+    categoryId: selectedCategoryId,
+    date: format(selectedMonth, "yyyy-MM-dd"),
+  });
   const utils = api.useUtils();
 
   const selectedCategory = spendCategories?.find(
@@ -93,8 +95,10 @@ export default function SpendStatementCategoryPage() {
   });
 
   const totalSpendForMonth =
-    spendsForSelectedMonth?.reduce((total, spend) => total + spend.amount, 0) ??
-    0;
+    spendsForSelectedCategoryAndMonth?.reduce(
+      (total, spend) => total + spend.amount,
+      0,
+    ) ?? 0;
 
   const handleEditSpend = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -138,7 +142,7 @@ export default function SpendStatementCategoryPage() {
               </span>
             </p>
             <p className="text-muted-foreground">
-              Count: {spendsForSelectedMonth?.length ?? 0}
+              Count: {spendsForSelectedCategoryAndMonth?.length ?? 0}
             </p>
           </div>
         </div>
@@ -151,9 +155,9 @@ export default function SpendStatementCategoryPage() {
                   <Skeleton key={i} className="h-16 w-full" />
                 ))}
               </div>
-            ) : spendsForSelectedMonth?.length ? (
+            ) : spendsForSelectedCategoryAndMonth?.length ? (
               <div className="space-y-3">
-                {spendsForSelectedMonth.map((spend) => {
+                {spendsForSelectedCategoryAndMonth.map((spend) => {
                   const category = spendCategories?.find(
                     (c) => c.id === spend.categoryId,
                   );
