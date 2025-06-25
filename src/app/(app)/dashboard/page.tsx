@@ -49,6 +49,9 @@ export default function DashboardPage() {
   const [selectedMonthForSpend, setSelectedMonthForSpend] = useState(
     new Date(),
   );
+  const [selectedMonthForInvestment, setSelectedMonthForInvestment] = useState(
+    new Date(),
+  );
 
   const [isAddIncomeOpen, setIsAddIncomeOpen] = useState(false);
   const [newIncome, setNewIncome] = useState({
@@ -65,6 +68,14 @@ export default function DashboardPage() {
     name: "",
   });
 
+  const [isAddInvestmentOpen, setIsAddInvestmentOpen] = useState(false);
+  const [newInvestment, setNewInvestment] = useState({
+    amount: 0,
+    assetId: "",
+    date: format(new Date(), "yyyy-MM-dd"),
+    name: "",
+  });
+
   const router = useRouter();
 
   // TRPC hooks
@@ -77,6 +88,12 @@ export default function DashboardPage() {
   const { data: totalSpendForMonth, isLoading: isLoadingSpends } =
     api.spend.getTotalSpendForSpecificMonth.useQuery({
       date: format(selectedMonthForSpend, "yyyy-MM-dd"),
+    });
+  const { data: investmentAssets } =
+    api.investment.getInvestmentAssets.useQuery();
+  const { data: totalInvestmentForMonth, isLoading: isLoadingInvestments } =
+    api.investment.getTotalInvestmentForSpecificMonth.useQuery({
+      date: format(selectedMonthForInvestment, "yyyy-MM-dd"),
     });
   const utils = api.useUtils();
 
@@ -106,6 +123,18 @@ export default function DashboardPage() {
     },
   });
 
+  const addInvestment = api.investment.addInvestment.useMutation({
+    onSuccess: async () => {
+      toast.success("Investment added successfully");
+      setIsAddInvestmentOpen(false);
+      await utils.investment.getTotalInvestmentForSpecificMonth.invalidate();
+      await utils.investment.getInvestmentStatementsForSpecificMonth.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
   // Handle month navigation
   const prevMonthForIncome = () =>
     setSelectedMonthForIncome(subMonths(selectedMonthForIncome, 1));
@@ -115,6 +144,10 @@ export default function DashboardPage() {
     setSelectedMonthForSpend(subMonths(selectedMonthForSpend, 1));
   const nextMonthForSpend = () =>
     setSelectedMonthForSpend(addMonths(selectedMonthForSpend, 1));
+  const prevMonthForInvestment = () =>
+    setSelectedMonthForInvestment(subMonths(selectedMonthForInvestment, 1));
+  const nextMonthForInvestment = () =>
+    setSelectedMonthForInvestment(addMonths(selectedMonthForInvestment, 1));
 
   // Handle income form submission
   const handleAddIncome = (e: React.FormEvent<HTMLFormElement>) => {
@@ -137,6 +170,17 @@ export default function DashboardPage() {
     });
   };
 
+  // Handle investment form submission
+  const handleAddInvestment = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    addInvestment.mutate({
+      amount: Number(newInvestment.amount),
+      assetId: newInvestment.assetId,
+      date: newInvestment.date,
+      name: newInvestment.name,
+    });
+  };
+
   // Reset form when dialog closes
   useEffect(() => {
     if (!isAddIncomeOpen) {
@@ -154,7 +198,15 @@ export default function DashboardPage() {
         name: "",
       });
     }
-  }, [isAddIncomeOpen, isAddSpendOpen]);
+    if (!isAddInvestmentOpen) {
+      setNewInvestment({
+        amount: 0,
+        assetId: "",
+        date: format(new Date(), "yyyy-MM-dd"),
+        name: "",
+      });
+    }
+  }, [isAddIncomeOpen, isAddSpendOpen, isAddInvestmentOpen]);
 
   return (
     <div className="p-4 md:p-6">
@@ -478,6 +530,182 @@ export default function DashboardPage() {
                 <DialogFooter>
                   <Button type="submit" disabled={addSpend.isPending}>
                     {addSpend.isPending ? "Adding..." : "Add Spend"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </CardFooter>
+      </Card>
+
+      {/* Monthly Investment Card */}
+      <Card
+        className="mb-8"
+        onClick={() =>
+          !isAddInvestmentOpen &&
+          router.push(
+            `/investment-statement-month?month=${format(selectedMonthForInvestment, "yyyy-MM-dd")}`,
+          )
+        }
+      >
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Monthly Investment</CardTitle>
+            <CardDescription className="mt-1">
+              {format(selectedMonthForInvestment, "MMMM yyyy")}
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                prevMonthForInvestment();
+              }}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                nextMonthForInvestment();
+              }}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">
+            {isLoadingInvestments ? (
+              <Skeleton className="h-8 w-32" />
+            ) : (
+              `₹ ${totalInvestmentForMonth?.toLocaleString()}`
+            )}
+          </div>
+        </CardContent>
+        <CardFooter className="justify-end">
+          <Dialog
+            open={isAddInvestmentOpen}
+            onOpenChange={setIsAddInvestmentOpen}
+          >
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsAddInvestmentOpen(true);
+                }}
+              >
+                <Plus className="h-4 w-4" /> Add Investment
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Investment</DialogTitle>
+                <DialogDescription>
+                  Enter the details to add a new investment.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleAddInvestment}>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="amount">Amount</Label>
+                    <Input
+                      id="amount"
+                      type="number"
+                      value={newInvestment.amount}
+                      onChange={(e) =>
+                        setNewInvestment({
+                          ...newInvestment,
+                          amount: Number(e.target.value),
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      value={newInvestment.name}
+                      onChange={(e) =>
+                        setNewInvestment({
+                          ...newInvestment,
+                          name: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="asset">Asset</Label>
+                    <Select
+                      value={newInvestment.assetId}
+                      onValueChange={(value: string) =>
+                        setNewInvestment({ ...newInvestment, assetId: value })
+                      }
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an investment asset" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {investmentAssets?.map((asset) => (
+                          <SelectItem key={asset.id} value={asset.id}>
+                            {asset.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="date">Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !newInvestment.date && "text-muted-foreground",
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {newInvestment.date ? (
+                            format(new Date(newInvestment.date), "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={new Date(newInvestment.date)}
+                          onSelect={(date) =>
+                            setNewInvestment({
+                              ...newInvestment,
+                              date: date
+                                ? format(date, "yyyy-MM-dd")
+                                : format(
+                                    new Date(newInvestment.date),
+                                    "yyyy-MM-dd",
+                                  ),
+                            })
+                          }
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit" disabled={addInvestment.isPending}>
+                    {addInvestment.isPending ? "Adding..." : "Add Investment"}
                   </Button>
                 </DialogFooter>
               </form>
