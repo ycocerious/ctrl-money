@@ -40,11 +40,10 @@ export default function LoginPage() {
         className="mb-6 rounded-3xl"
       />
       <h1 className="mb-2 text-2xl">
-        Welcome to <span className="text-primary">Rudy!</span>
+        Welcome to <span className="text-primary">Ctrl.Money!</span>
       </h1>
       <p className="text-md mb-10 px-6 text-center">
-        A minimalist habit tracker - track only your sleep, exercise, and
-        nutrition
+        Your personal finance manager
       </p>
       <form action={loginWithGoogle}>
         <SubmitButton />
