@@ -111,6 +111,17 @@ export default function IncomeSourcesPage() {
     return totalIncome?.totalAmount ?? 0;
   };
 
+  const getSortedSources = () => {
+    if (!incomeSources) return [];
+
+    return incomeSources
+      .map((source) => ({
+        ...source,
+        total: getTotalForSource(source.id),
+      }))
+      .sort((a, b) => b.total - a.total);
+  };
+
   return (
     <div className="p-4 md:p-6">
       <div className="mb-4 flex items-center justify-between">
@@ -161,61 +172,57 @@ export default function IncomeSourcesPage() {
         </div>
       ) : incomeSources?.length ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {totalIncomes?.map((income) => {
-            const source = incomeSources?.find((s) => s.id === income.sourceId);
-            if (!source) return null;
-            return (
-              <Card
-                key={source.id}
-                className="hover:bg-accent/50 cursor-pointer transition-colors"
-                onClick={() =>
-                  !isEditSourceOpen &&
-                  router.push(`/income-statement-source?sourceId=${source.id}`)
-                }
-              >
-                <CardHeader>
-                  <CardTitle className="text-lg">{source.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    ₹{" "}
-                    {new Intl.NumberFormat("en-IN", {
-                      maximumFractionDigits: 0,
-                      style: "decimal",
-                    }).format(getTotalForSource(source.id))}
-                  </div>
-                  <p className="text-muted-foreground text-sm">
-                    Total income from this source
-                  </p>
-                </CardContent>
-                <CardFooter className="justify-end">
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedSource(source);
-                        setIsEditSourceOpen(true);
-                      }}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteSource(source.id);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardFooter>
-              </Card>
-            );
-          })}
+          {getSortedSources().map((source) => (
+            <Card
+              key={source.id}
+              className="hover:bg-accent/50 cursor-pointer transition-colors"
+              onClick={() =>
+                !isEditSourceOpen &&
+                router.push(`/income-statement-source?sourceId=${source.id}`)
+              }
+            >
+              <CardHeader>
+                <CardTitle className="text-lg">{source.name}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  ₹{" "}
+                  {new Intl.NumberFormat("en-IN", {
+                    maximumFractionDigits: 0,
+                    style: "decimal",
+                  }).format(source.total)}
+                </div>
+                <p className="text-muted-foreground text-sm">
+                  Total income from this source
+                </p>
+              </CardContent>
+              <CardFooter className="justify-end">
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedSource(source);
+                      setIsEditSourceOpen(true);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteSource(source.id);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardFooter>
+            </Card>
+          ))}
         </div>
       ) : (
         <div className="rounded-lg border p-8 text-center">

@@ -110,6 +110,17 @@ export default function SpendCategoriesPage() {
     return totalSpend?.totalAmount ?? 0;
   };
 
+  const getSortedCategories = () => {
+    if (!spendCategories) return [];
+
+    return spendCategories
+      .map((category) => ({
+        ...category,
+        total: getTotalForCategory(category.id),
+      }))
+      .sort((a, b) => b.total - a.total);
+  };
+
   return (
     <div className="p-4 md:p-6">
       <div className="mb-4 flex items-center justify-between">
@@ -160,65 +171,59 @@ export default function SpendCategoriesPage() {
         </div>
       ) : spendCategories?.length ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {totalSpends?.map((spend) => {
-            const category = spendCategories?.find(
-              (c) => c.id === spend.categoryId,
-            );
-            if (!category) return null;
-            return (
-              <Card
-                key={category.id}
-                className="hover:bg-accent/50 cursor-pointer transition-colors"
-                onClick={() =>
-                  !isEditCategoryOpen &&
-                  router.push(
-                    `/spend-statement-category?categoryId=${category.id}`,
-                  )
-                }
-              >
-                <CardHeader>
-                  <CardTitle className="text-lg">{category.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    ₹{" "}
-                    {new Intl.NumberFormat("en-IN", {
-                      maximumFractionDigits: 0,
-                      style: "decimal",
-                    }).format(getTotalForCategory(category.id))}
-                  </div>
-                  <p className="text-muted-foreground text-sm">
-                    Total spend in this category
-                  </p>
-                </CardContent>
-                <CardFooter className="justify-end">
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedCategory(category);
-                        setIsEditCategoryOpen(true);
-                      }}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteCategory(category.id);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardFooter>
-              </Card>
-            );
-          })}
+          {getSortedCategories().map((category) => (
+            <Card
+              key={category.id}
+              className="hover:bg-accent/50 cursor-pointer transition-colors"
+              onClick={() =>
+                !isEditCategoryOpen &&
+                router.push(
+                  `/spend-statement-category?categoryId=${category.id}`,
+                )
+              }
+            >
+              <CardHeader>
+                <CardTitle className="text-lg">{category.name}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  ₹{" "}
+                  {new Intl.NumberFormat("en-IN", {
+                    maximumFractionDigits: 0,
+                    style: "decimal",
+                  }).format(category.total)}
+                </div>
+                <p className="text-muted-foreground text-sm">
+                  Total spend in this category
+                </p>
+              </CardContent>
+              <CardFooter className="justify-end">
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedCategory(category);
+                      setIsEditCategoryOpen(true);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteCategory(category.id);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardFooter>
+            </Card>
+          ))}
         </div>
       ) : (
         <div className="rounded-lg border p-8 text-center">
