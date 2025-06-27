@@ -121,11 +121,24 @@ export default function SpendStatementMonthPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All categories</SelectItem>
-                {spendCategories?.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
+                {spendCategories
+                  ?.map((category) => {
+                    const categoryTotal =
+                      spendsForSelectedMonth
+                        ?.filter((spend) => spend.categoryId === category.id)
+                        .reduce((total, spend) => total + spend.amount, 0) ?? 0;
+
+                    return {
+                      category,
+                      total: categoryTotal,
+                    };
+                  })
+                  .sort((a, b) => b.total - a.total)
+                  .map(({ category, total }) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name} (₹{total.toLocaleString()})
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>
