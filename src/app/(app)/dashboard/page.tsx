@@ -3,7 +3,7 @@
 import { addMonths, format, subMonths } from "date-fns";
 import { CalendarIcon, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
@@ -61,7 +61,12 @@ export default function DashboardPage() {
   const [newSpend, setNewSpend] = useState({
     amount: 0,
     categoryId: "",
-    date: format(new Date(), "yyyy-MM-dd"),
+    date: format(
+      format(selectedMonthForSpend, "yyyy-MM") === format(new Date(), "yyyy-MM")
+        ? new Date()
+        : new Date(format(selectedMonthForSpend, "yyyy-MM-01")),
+      "yyyy-MM-dd",
+    ),
     name: "",
   });
 
@@ -118,7 +123,13 @@ export default function DashboardPage() {
       setNewSpend({
         amount: 0,
         categoryId: "",
-        date: format(new Date(), "yyyy-MM-dd"),
+        date: format(
+          format(selectedMonthForSpend, "yyyy-MM") ===
+            format(new Date(), "yyyy-MM")
+            ? new Date()
+            : new Date(format(selectedMonthForSpend, "yyyy-MM-01")),
+          "yyyy-MM-dd",
+        ),
         name: "",
       });
     },
@@ -185,6 +196,19 @@ export default function DashboardPage() {
       purpose: newReceivable.purpose,
     });
   };
+
+  useEffect(() => {
+    setNewSpend((prev) => ({
+      ...prev,
+      date: format(
+        format(selectedMonthForSpend, "yyyy-MM") ===
+          format(new Date(), "yyyy-MM")
+          ? new Date()
+          : new Date(format(selectedMonthForSpend, "yyyy-MM-01")),
+        "yyyy-MM-dd",
+      ),
+    }));
+  }, [selectedMonthForSpend]);
 
   return (
     <div className="p-4 md:p-6">
@@ -501,20 +525,14 @@ export default function DashboardPage() {
                       <PopoverContent className="w-auto p-0">
                         <Calendar
                           mode="single"
-                          selected={
-                            format(selectedMonthForSpend, "yyyy-MM") ===
-                            format(new Date(), "yyyy-MM")
-                              ? new Date(newSpend.date)
-                              : new Date(
-                                  format(selectedMonthForSpend, "yyyy-MM-01"),
-                                )
-                          }
+                          selected={new Date(newSpend.date)}
+                          month={selectedMonthForSpend}
                           onSelect={(date) =>
                             setNewSpend({
                               ...newSpend,
                               date: date
                                 ? format(date, "yyyy-MM-dd")
-                                : format(new Date(newSpend.date), "yyyy-MM-dd"),
+                                : newSpend.date,
                             })
                           }
                           initialFocus
