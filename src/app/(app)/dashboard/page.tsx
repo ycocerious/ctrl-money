@@ -321,7 +321,14 @@ export default function DashboardPage() {
                       <PopoverContent className="w-auto p-0">
                         <Calendar
                           mode="single"
-                          selected={new Date(newIncome.date)}
+                          selected={
+                            format(selectedMonthForIncome, "yyyy-MM") ===
+                            format(new Date(), "yyyy-MM")
+                              ? new Date(newIncome.date)
+                              : new Date(
+                                  format(selectedMonthForIncome, "yyyy-MM-01"),
+                                )
+                          }
                           onSelect={(date) =>
                             setNewIncome({
                               ...newIncome,
@@ -494,7 +501,14 @@ export default function DashboardPage() {
                       <PopoverContent className="w-auto p-0">
                         <Calendar
                           mode="single"
-                          selected={new Date(newSpend.date)}
+                          selected={
+                            format(selectedMonthForSpend, "yyyy-MM") ===
+                            format(new Date(), "yyyy-MM")
+                              ? new Date(newSpend.date)
+                              : new Date(
+                                  format(selectedMonthForSpend, "yyyy-MM-01"),
+                                )
+                          }
                           onSelect={(date) =>
                             setNewSpend({
                               ...newSpend,
