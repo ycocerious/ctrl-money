@@ -64,6 +64,13 @@
       "when": 1750857953189,
       "tag": "0008_bent_deathstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1751036843600,
+      "tag": "0009_stale_warlock",
+      "breakpoints": true
     }
   ]
 }

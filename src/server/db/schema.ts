@@ -56,27 +56,6 @@ export const spendCategories = pgTable("spend_categories", {
   userId: varchar("user_id").notNull(),
 });
 
-export const investments = pgTable(
-  "investments",
-  {
-    id: commonIdSchema("id").primaryKey(),
-    amount: integer("amount").notNull(),
-    name: text("name").notNull(),
-    assetId: text("asset_id")
-      .notNull()
-      .references(() => investmentAssets.id),
-    date: date("date").notNull(),
-    userId: varchar("user_id").notNull(),
-  },
-  (table) => [index("investment_dateIndex").on(table.date)],
-);
-
-export const investmentAssets = pgTable("investment_assets", {
-  id: commonIdSchema("id").primaryKey(),
-  name: text("name").notNull(),
-  userId: varchar("user_id").notNull(),
-});
-
 export const receivables = pgTable("receivables", {
   id: commonIdSchema("id").primaryKey(),
   amount: integer("amount").notNull(),
@@ -101,13 +80,6 @@ export const spendRelations = relations(spends, ({ one }) => ({
   }),
 }));
 
-export const investmentRelations = relations(investments, ({ one }) => ({
-  asset: one(investmentAssets, {
-    fields: [investments.assetId],
-    references: [investmentAssets.id],
-  }),
-}));
-
 //types
 export type IncomeSelect = typeof incomes.$inferSelect;
 export type IncomeInsert = typeof incomes.$inferInsert;
@@ -120,12 +92,6 @@ export type SpendInsert = typeof spends.$inferInsert;
 
 export type SpendCategorySelect = typeof spendCategories.$inferSelect;
 export type SpendCategoryInsert = typeof spendCategories.$inferInsert;
-
-export type InvestmentSelect = typeof investments.$inferSelect;
-export type InvestmentInsert = typeof investments.$inferInsert;
-
-export type InvestmentAssetSelect = typeof investmentAssets.$inferSelect;
-export type InvestmentAssetInsert = typeof investmentAssets.$inferInsert;
 
 export type ReceivableSelect = typeof receivables.$inferSelect;
 export type ReceivableInsert = typeof receivables.$inferInsert;
