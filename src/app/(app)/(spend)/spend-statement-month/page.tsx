@@ -108,7 +108,7 @@ export default function SpendStatementMonthPage() {
       {/* Monthly Spends Detail */}
       <div className="h-[calc(100vh-120px)] rounded-lg border">
         <div className="bg-background sticky top-0 border-b px-4 pt-4">
-          <div className="mb-1 flex items-center justify-between">
+          <div className="relative">
             <h2 className="font-semibold">
               Spend Statement - {format(selectedMonth, "MMMM yyyy")}
             </h2>
@@ -116,7 +116,7 @@ export default function SpendStatementMonthPage() {
               value={selectedCategory}
               onValueChange={setSelectedCategory}
             >
-              <SelectTrigger className="h-10 w-10">
+              <SelectTrigger className="absolute top-0 right-0 h-14 w-10">
                 <Filter className="h-4 w-4" />
               </SelectTrigger>
               <SelectContent>
@@ -129,8 +129,8 @@ export default function SpendStatementMonthPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex justify-between">
-            <p className="text-muted-foreground mb-4">
+          <div className="flex justify-start gap-4 pb-4">
+            <p className="text-muted-foreground">
               Total:{" "}
               <span className="font-bold">
                 ₹{totalSpendForMonth.toLocaleString()}
