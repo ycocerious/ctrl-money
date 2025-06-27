@@ -128,7 +128,21 @@ export default function SpendCategoriesPage() {
   return (
     <div className="p-4 md:p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold">Spend Categories</h1>
+        <div>
+          <h1 className="text-xl font-bold">Spend Categories</h1>
+          <p className="text-muted-foreground">
+            Total: ₹{" "}
+            {new Intl.NumberFormat("en-IN", {
+              maximumFractionDigits: 0,
+              style: "decimal",
+            }).format(
+              getSortedCategories().reduce(
+                (acc, curr) => Number(acc) + Number(curr.total),
+                0,
+              ),
+            )}
+          </p>
+        </div>
         <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
           <DialogTrigger asChild>
             <Button className="gap-1">

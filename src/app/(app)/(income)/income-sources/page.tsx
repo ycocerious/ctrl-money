@@ -125,7 +125,21 @@ export default function IncomeSourcesPage() {
   return (
     <div className="p-4 md:p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold">Income Sources</h1>
+        <div>
+          <h1 className="text-xl font-bold">Income Sources</h1>
+          <p className="text-muted-foreground">
+            Total: ₹
+            {new Intl.NumberFormat("en-IN", {
+              maximumFractionDigits: 0,
+              style: "decimal",
+            }).format(
+              getSortedSources().reduce(
+                (acc, curr) => Number(acc) + Number(curr.total),
+                0,
+              ),
+            )}
+          </p>
+        </div>
         <Dialog open={isAddSourceOpen} onOpenChange={setIsAddSourceOpen}>
           <DialogTrigger asChild>
             <Button className="gap-1">
