@@ -47,6 +47,9 @@ export default function SpendCategoriesPage() {
   const addSpendCategory = api.spend.addSpendCategory.useMutation({
     onSuccess: async () => {
       toast.success("Spend category added successfully");
+      setNewCategory({
+        name: "",
+      });
       setIsAddCategoryOpen(false);
       await utils.spend.getSpendCategories.invalidate();
     },
@@ -58,6 +61,7 @@ export default function SpendCategoriesPage() {
   const editSpendCategory = api.spend.editSpendCategory.useMutation({
     onSuccess: async () => {
       toast.success("Spend category updated successfully");
+      setSelectedCategory(null);
       setIsEditCategoryOpen(false);
       await utils.spend.getSpendCategories.invalidate();
     },
