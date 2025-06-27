@@ -3,7 +3,7 @@
 import { addMonths, format, subMonths } from "date-fns";
 import { CalendarIcon, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
@@ -114,6 +114,11 @@ export default function DashboardPage() {
       await utils.income.getTotalIncomeForSpecificMonth.invalidate();
       await utils.income.getIncomeStatementsForSpecificMonth.invalidate();
       await utils.income.getIncomeStatementsForSpecificSource.invalidate();
+      setNewIncome({
+        amount: 0,
+        sourceId: "",
+        date: format(new Date(), "yyyy-MM-dd"),
+      });
     },
     onError: (error) => {
       toast.error(error.message);
@@ -127,6 +132,12 @@ export default function DashboardPage() {
       await utils.spend.getTotalSpendForSpecificMonth.invalidate();
       await utils.spend.getSpendStatementsForSpecificMonth.invalidate();
       await utils.spend.getSpendStatementsForSpecificCategoryAndMonth.invalidate();
+      setNewSpend({
+        amount: 0,
+        categoryId: "",
+        date: format(new Date(), "yyyy-MM-dd"),
+        name: "",
+      });
     },
     onError: (error) => {
       toast.error(error.message);
@@ -150,6 +161,12 @@ export default function DashboardPage() {
       toast.success("Receivable added successfully");
       setIsAddReceivableOpen(false);
       await utils.receivable.getTotalReceivableAmount.invalidate();
+      setNewReceivable({
+        amount: 0,
+        name: "",
+        purpose: "",
+        date: format(new Date(), "yyyy-MM-dd"),
+      });
     },
     onError: (error) => {
       toast.error(error.message);
@@ -212,46 +229,6 @@ export default function DashboardPage() {
       purpose: newReceivable.purpose,
     });
   };
-
-  // Reset form when dialog closes
-  useEffect(() => {
-    if (!isAddIncomeOpen) {
-      setNewIncome({
-        amount: 0,
-        sourceId: "",
-        date: format(new Date(), "yyyy-MM-dd"),
-      });
-    }
-    if (!isAddSpendOpen) {
-      setNewSpend({
-        amount: 0,
-        categoryId: "",
-        date: format(new Date(), "yyyy-MM-dd"),
-        name: "",
-      });
-    }
-    if (!isAddInvestmentOpen) {
-      setNewInvestment({
-        amount: 0,
-        assetId: "",
-        date: format(new Date(), "yyyy-MM-dd"),
-        name: "",
-      });
-    }
-    if (!isAddReceivableOpen) {
-      setNewReceivable({
-        amount: 0,
-        name: "",
-        purpose: "",
-        date: format(new Date(), "yyyy-MM-dd"),
-      });
-    }
-  }, [
-    isAddIncomeOpen,
-    isAddSpendOpen,
-    isAddInvestmentOpen,
-    isAddReceivableOpen,
-  ]);
 
   return (
     <div className="p-4 md:p-6">
