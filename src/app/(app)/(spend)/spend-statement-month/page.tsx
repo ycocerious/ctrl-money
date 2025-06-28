@@ -179,8 +179,8 @@ export default function SpendStatementMonthPage() {
                           ₹ {spend.amount.toLocaleString()}
                         </p>
                         <p className="text-muted-foreground text-sm">
-                          {category?.name} - {spend.name?.slice(0, 15)}
-                          {spend.name && spend.name.length > 15 ? "..." : ""}
+                          {category?.name} - {spend.name?.slice(0, 30)}
+                          {spend.name && spend.name.length > 30 ? "..." : ""}
                         </p>
                       </div>
                       <div className="flex flex-col">
