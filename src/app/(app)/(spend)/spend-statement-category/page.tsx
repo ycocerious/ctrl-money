@@ -157,50 +157,52 @@ export default function SpendStatementCategoryPage() {
               </div>
             ) : spendsForSelectedCategoryAndMonth?.length ? (
               <div className="space-y-3">
-                {spendsForSelectedCategoryAndMonth.map((spend) => {
-                  const category = spendCategories?.find(
-                    (c) => c.id === spend.categoryId,
-                  );
-                  return (
-                    <div
-                      key={spend.id}
-                      className="flex items-center justify-between rounded-lg border p-3"
-                    >
-                      <div>
-                        <p className="font-medium">
-                          ₹ {spend.amount.toLocaleString()}
-                        </p>
-                        <p className="text-muted-foreground text-sm">
-                          {category?.name} - {spend.name?.slice(0, 15)}...
-                        </p>
-                      </div>
-                      <div className="flex flex-col">
-                        <div className="mb-1 flex gap-1">
-                          <Button
-                            variant="ghost"
-                            className="h-6 w-6"
-                            onClick={() => {
-                              setSelectedSpend(spend);
-                              setIsEditSpendOpen(true);
-                            }}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            className="h-6 w-6"
-                            onClick={() => handleDeleteSpend(spend.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                {[...spendsForSelectedCategoryAndMonth]
+                  .sort((a, b) => b.amount - a.amount)
+                  .map((spend) => {
+                    const category = spendCategories?.find(
+                      (c) => c.id === spend.categoryId,
+                    );
+                    return (
+                      <div
+                        key={spend.id}
+                        className="flex items-center justify-between rounded-lg border p-3"
+                      >
+                        <div>
+                          <p className="font-medium">
+                            ₹ {spend.amount.toLocaleString()}
+                          </p>
+                          <p className="text-muted-foreground text-sm">
+                            {category?.name} - {spend.name?.slice(0, 15)}...
+                          </p>
                         </div>
-                        <p className="text-muted-foreground text-right text-xs">
-                          {new Date(spend.date).toLocaleDateString()}
-                        </p>
+                        <div className="flex flex-col">
+                          <div className="mb-1 flex gap-1">
+                            <Button
+                              variant="ghost"
+                              className="h-6 w-6"
+                              onClick={() => {
+                                setSelectedSpend(spend);
+                                setIsEditSpendOpen(true);
+                              }}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              className="h-6 w-6"
+                              onClick={() => handleDeleteSpend(spend.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <p className="text-muted-foreground text-right text-xs">
+                            {new Date(spend.date).toLocaleDateString()}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </div>
             ) : (
               <div className="py-4 text-center">
