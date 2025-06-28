@@ -126,7 +126,9 @@ export default function IncomeSourcesPage() {
     <div className="p-4 md:p-6">
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold">Income Sources</h1>
+          <h1 className="text-xl font-bold">
+            Income Sources ({incomeSources?.length ?? 0})
+          </h1>
           <p className="text-muted-foreground">
             Total: ₹
             {new Intl.NumberFormat("en-IN", {
