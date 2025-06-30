@@ -1,7 +1,13 @@
 "use client";
 
 import { addMonths, format, subMonths } from "date-fns";
-import { CalendarIcon, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import {
+  AlertTriangle,
+  CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
@@ -266,18 +272,26 @@ export default function DashboardPage() {
         </CardContent>
         <CardFooter className="justify-end">
           <Dialog open={isAddIncomeOpen} onOpenChange={setIsAddIncomeOpen}>
-            <DialogTrigger asChild>
-              <Button
-                className="gap-2"
-                onClick={(e) => {
-                  e.stopPropagation();
+            <Button
+              className="gap-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!incomeSources || incomeSources.length === 0) {
+                  toast(
+                    "Please add an income source before adding an income. (See sidebar)",
+                    {
+                      icon: <AlertTriangle className="h-8 w-8" />,
+                      duration: 5000,
+                    },
+                  );
+                } else {
                   setIsAddIncomeOpen(true);
-                }}
-              >
-                <Plus className="h-4 w-4" />
-                Add Income
-              </Button>
-            </DialogTrigger>
+                }
+              }}
+            >
+              <Plus className="h-4 w-4" />
+              Add Income
+            </Button>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Add New Income</DialogTitle>
@@ -435,18 +449,26 @@ export default function DashboardPage() {
         </CardContent>
         <CardFooter className="justify-end">
           <Dialog open={isAddSpendOpen} onOpenChange={setIsAddSpendOpen}>
-            <DialogTrigger asChild>
-              <Button
-                className="gap-2"
-                onClick={(e) => {
-                  e.stopPropagation();
+            <Button
+              className="gap-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!spendCategories || spendCategories.length === 0) {
+                  toast(
+                    "Please add a spend category before adding a spend. (See sidebar)",
+                    {
+                      icon: <AlertTriangle className="h-8 w-8" />,
+                      duration: 5000,
+                    },
+                  );
+                } else {
                   setIsAddSpendOpen(true);
-                }}
-              >
-                <Plus className="h-4 w-4" />
-                Add Spend
-              </Button>
-            </DialogTrigger>
+                }
+              }}
+            >
+              <Plus className="h-4 w-4" />
+              Add Spend
+            </Button>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Add New Spend</DialogTitle>
