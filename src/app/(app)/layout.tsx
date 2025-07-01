@@ -2,6 +2,7 @@
 "use client";
 
 import { Home, LayoutDashboard, Menu, PieChart, Wallet } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -76,20 +77,28 @@ export default function DashboardLayout({
       {/* Mobile Sidebar */}
       <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
         <SheetTrigger asChild>
-          <div className="bg-background fixed top-0 right-0 left-0 z-40 flex items-center border-b p-4 lg:hidden">
-            <Button variant="outline" size="icon" className="absolute left-4">
+          <div className="bg-background fixed top-0 right-0 left-0 z-40 flex items-center justify-between border-b p-4 lg:hidden">
+            <Button variant="outline" size="icon">
               <Menu className="h-5 w-5" />
             </Button>
-            <h1 className="flex-1 text-center text-xl font-bold">Ctrl.Money</h1>
+            <div className="flex items-center gap-2">
+              <Image
+                src="/logo.png"
+                alt="Ctrl.Money"
+                width={32}
+                height={32}
+                className="rounded-lg"
+              />
+              <h1 className="text-xl font-bold">Ctrl.Money</h1>
+            </div>
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-4"
               asChild
               aria-label="Go to Dashboard"
             >
               <Link href="/dashboard">
-                <Home className="h-5 w-5" />
+                <Home className="size-6" />
                 <span className="sr-only">Home</span>
               </Link>
             </Button>
