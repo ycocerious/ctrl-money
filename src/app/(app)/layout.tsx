@@ -50,7 +50,7 @@ export default function DashboardLayout({
       {/* Desktop Sidebar */}
       <aside className="bg-card border-border hidden w-64 flex-col border-r lg:flex">
         <div className="p-6">
-          <h1 className="text-xl font-bold">Finance Tracker</h1>
+          <h1 className="text-xl font-bold">Ctrl.Money</h1>
         </div>
         <div className="flex-1 px-4">
           <nav className="space-y-2">
