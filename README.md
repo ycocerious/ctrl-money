@@ -1,3 +1,3 @@
 ## Ctrl Money
 
-My own personal finance app
+Your super simplified personal finance app
