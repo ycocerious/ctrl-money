@@ -1,4 +1,4 @@
-import { and, eq, sum } from "drizzle-orm";
+import { and, desc, eq, sum } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
@@ -10,7 +10,7 @@ export const receivableRouter = createTRPCRouter({
       .select()
       .from(receivables)
       .where(eq(receivables.userId, ctx.userId))
-      .orderBy(receivables.date);
+      .orderBy(desc(receivables.amount));
   }),
 
   getTotalReceivableAmount: publicProcedure.query(async ({ ctx }) => {
