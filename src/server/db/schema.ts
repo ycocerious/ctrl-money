@@ -64,34 +64,35 @@ export const receivables = pgTable("receivables", {
   date: date("date").notNull(),
   userId: varchar("user_id").notNull(),
 });
+export const trips = pgTable("trips", {
+  id: commonIdSchema("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date"),
+  budget: integer("budget"),
+  userId: varchar("user_id").notNull(),
+});
+
+export const tripExpenses = pgTable(
+  "trip_expenses",
+  {
+    id: commonIdSchema("id").primaryKey(),
+    amount: integer("amount").notNull(),
+    name: text("name").notNull(),
+    description: text("description"),
+    categoryId: text("category_id")
+      .notNull()
+      .references(() => spendCategories.id),
+    tripId: text("trip_id")
+      .notNull()
+      .references(() => trips.id),
+    date: date("date").notNull(),
+    userId: varchar("user_id").notNull(),
+  },
+  (table) => [index("trip_expense_dateIndex").on(table.date)],
+);
 
 //relations
-export const incomeRelations = relations(incomes, ({ one }) => ({
-  source: one(incomeSources, {
-    fields: [incomes.sourceId],
-    references: [incomeSources.id],
-  }),
-}));
-
-export const spendRelations = relations(spends, ({ one }) => ({
-  category: one(spendCategories, {
-    fields: [spends.categoryId],
-    references: [spendCategories.id],
-  }),
-}));
-
-//types
-export type IncomeSelect = typeof incomes.$inferSelect;
-export type IncomeInsert = typeof incomes.$inferInsert;
-
-export type IncomeSourceSelect = typeof incomeSources.$inferSelect;
-export type IncomeSourceInsert = typeof incomeSources.$inferInsert;
-
-export type SpendSelect = typeof spends.$inferSelect;
-export type SpendInsert = typeof spends.$inferInsert;
-
-export type SpendCategorySelect = typeof spendCategories.$inferSelect;
-export type SpendCategoryInsert = typeof spendCategories.$inferInsert;
-
-export type ReceivableSelect = typeof receivables.$inferSelect;
-export type ReceivableInsert = typeof receivables.$inferInsert;
+export const tripRelations = relations(trips, ({ many }) => ({
+  expenses: many(tripExpenses),
