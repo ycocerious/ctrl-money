@@ -6,6 +6,9 @@ import { Geist } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import { TRPCReactProvider } from "~/trpc/react";
 
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
 export const metadata: Metadata = {
   title: "Ctrl Money",
   description: "Personal finance app",
@@ -32,6 +35,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable} dark`}>
       <body>
+        <SpeedInsights />
+        <Analytics />
         <Toaster />
         <TRPCReactProvider>{children}</TRPCReactProvider>
       </body>
