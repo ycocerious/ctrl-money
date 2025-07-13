@@ -3,7 +3,7 @@
 import { format } from "date-fns";
 import { CalendarIcon, Pencil, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
@@ -36,28 +36,57 @@ import { api } from "~/trpc/react";
 export default function IncomeStatementSourcePage() {
   const searchParams = useSearchParams();
   const selectedSourceId = searchParams.get("sourceId");
+  const selectedFinancialYear = searchParams.get("financialYear") ?? "all";
   const [isEditIncomeOpen, setIsEditIncomeOpen] = useState(false);
   const [selectedIncome, setSelectedIncome] = useState<IncomeSelect | null>(
     null,
   );
   const router = useRouter();
 
+  // TRPC hooks
+  const { data: incomeSources } = api.income.getIncomeSources.useQuery();
+  const { data: incomesForSelectedSource, isLoading: isLoadingIncomes } =
+    api.income.getIncomeStatementsForSpecificSource.useQuery({
+      sourceId: selectedSourceId!,
+    });
+  const utils = api.useUtils();
+
+  const filteredIncomes = useMemo(() => {
+    if (!incomesForSelectedSource || selectedFinancialYear === "all") {
+      return incomesForSelectedSource;
+    }
+
+    const [startYear, endYear] = selectedFinancialYear.split("-").map(Number);
+
+    return incomesForSelectedSource.filter((income) => {
+      const date = new Date(income.date);
+      const month = date.getMonth() + 1;
+      const year = date.getFullYear();
+
+      if (month >= 4) {
+        return year === startYear;
+      } else {
+        return year === endYear;
+      }
+    });
+  }, [incomesForSelectedSource, selectedFinancialYear]);
+
   if (!selectedSourceId) {
     router.push("/income-sources");
     return;
   }
 
-  // TRPC hooks
-  const { data: incomeSources } = api.income.getIncomeSources.useQuery();
-  const { data: incomesForSelectedSource, isLoading: isLoadingIncomes } =
-    api.income.getIncomeStatementsForSpecificSource.useQuery({
-      sourceId: selectedSourceId,
-    });
-  const utils = api.useUtils();
-
   const selectedSource = incomeSources?.find(
     (source) => source.id === selectedSourceId,
   );
+
+  const formatFinancialYear = (year: string) => {
+    const [startYear, endYear] = year.split("-");
+    return `${startYear?.slice(-2)}-${endYear?.slice(-2)}`;
+  };
+
+  const totalIncomeForSource =
+    filteredIncomes?.reduce((total, income) => total + income.amount, 0) ?? 0;
 
   const editIncome = api.income.editIncome.useMutation({
     onSuccess: async () => {
@@ -66,7 +95,7 @@ export default function IncomeStatementSourcePage() {
       await utils.income.getIncomeStatementsForSpecificSource.invalidate();
       await utils.income.getIncomeStatementsForSpecificMonth.invalidate();
       await utils.income.getTotalIncomeForSpecificMonth.invalidate();
-      await utils.income.getTotalIncomeForAllSources.invalidate();
+      await utils.income.getAllIncomes.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -79,18 +108,12 @@ export default function IncomeStatementSourcePage() {
       await utils.income.getIncomeStatementsForSpecificSource.invalidate();
       await utils.income.getIncomeStatementsForSpecificMonth.invalidate();
       await utils.income.getTotalIncomeForSpecificMonth.invalidate();
-      await utils.income.getTotalIncomeForAllSources.invalidate();
+      await utils.income.getAllIncomes.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
     },
   });
-
-  const totalIncomeForMonth =
-    incomesForSelectedSource?.reduce(
-      (total, income) => total + income.amount,
-      0,
-    ) ?? 0;
 
   const handleEditIncome = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -117,16 +140,21 @@ export default function IncomeStatementSourcePage() {
         <div className="bg-background sticky top-0 border-b px-4 pt-4">
           <h2 className="font-semibold">
             Income Statement - {selectedSource?.name}
+            {selectedFinancialYear !== "all" && (
+              <span className="text-muted-foreground ml-2">
+                (FY {formatFinancialYear(selectedFinancialYear)})
+              </span>
+            )}
           </h2>
           <div className="flex justify-between">
             <p className="text-muted-foreground mb-4">
               Total:{" "}
               <span className="font-bold">
-                ₹{totalIncomeForMonth.toLocaleString()}
+                ₹{totalIncomeForSource.toLocaleString()}
               </span>
             </p>
             <p className="text-muted-foreground">
-              Count: {incomesForSelectedSource?.length ?? 0}
+              Count: {filteredIncomes?.length ?? 0}
             </p>
           </div>
         </div>
@@ -139,9 +167,9 @@ export default function IncomeStatementSourcePage() {
                   <Skeleton key={i} className="h-16 w-full" />
                 ))}
               </div>
-            ) : incomesForSelectedSource?.length ? (
+            ) : filteredIncomes?.length ? (
               <div className="space-y-3">
-                {incomesForSelectedSource.map((income) => {
+                {filteredIncomes.map((income) => {
                   const source = incomeSources?.find(
                     (s) => s.id === income.sourceId,
                   );
@@ -189,7 +217,9 @@ export default function IncomeStatementSourcePage() {
             ) : (
               <div className="py-4 text-center">
                 <p className="text-muted-foreground">
-                  No income entries for this source.
+                  {selectedFinancialYear === "all"
+                    ? "No income entries for this source."
+                    : `No income entries for FY ${formatFinancialYear(selectedFinancialYear)}.`}
                 </p>
               </div>
             )}

@@ -72,18 +72,15 @@ export const incomeRouter = createTRPCRouter({
       return result[0]?.totalAmount ?? 0;
     }),
 
-  getTotalIncomeForAllSources: publicProcedure.query(async ({ ctx }) => {
-    const stats = await db
+  getAllIncomes: publicProcedure.query(async ({ ctx }) => {
+    return db
       .select({
         sourceId: incomes.sourceId,
-        totalAmount: sql<number>`sum(${incomes.amount})`,
+        amount: incomes.amount,
+        date: incomes.date,
       })
       .from(incomes)
-      .where(eq(incomes.userId, ctx.userId))
-      .groupBy(incomes.sourceId)
-      .orderBy(desc(sql<number>`sum(${incomes.amount})`));
-
-    return stats;
+      .where(eq(incomes.userId, ctx.userId));
   }),
 
   addIncome: publicProcedure

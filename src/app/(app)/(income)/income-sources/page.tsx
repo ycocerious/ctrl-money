@@ -1,9 +1,9 @@
 // app/income-sources/page.tsx
 "use client";
 
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Filter, Pencil, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import { Button } from "~/components/ui/button";
 import {
@@ -24,9 +24,27 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "~/components/ui/select";
 import { Skeleton } from "~/components/ui/skeleton";
 import type { IncomeSourceSelect } from "~/server/db/schema";
 import { api } from "~/trpc/react";
+
+const formatIndianNumber = (num: number) => {
+  return new Intl.NumberFormat("en-IN", {
+    maximumFractionDigits: 0,
+    style: "decimal",
+  }).format(num);
+};
+
+const formatFinancialYear = (year: string) => {
+  const [startYear, endYear] = year.split("-");
+  return `${startYear?.slice(-2)}-${endYear?.slice(-2)}`;
+};
 
 export default function IncomeSourcesPage() {
   const [isAddSourceOpen, setIsAddSourceOpen] = useState(false);
@@ -37,12 +55,33 @@ export default function IncomeSourcesPage() {
   const [selectedSource, setSelectedSource] =
     useState<IncomeSourceSelect | null>(null);
   const router = useRouter();
+  const [selectedFinancialYear, setSelectedFinancialYear] =
+    useState<string>("all");
 
   // TRPC hooks
   const { data: incomeSources, isLoading: isLoadingIncomeSources } =
     api.income.getIncomeSources.useQuery();
-  const { data: totalIncomes } =
-    api.income.getTotalIncomeForAllSources.useQuery();
+  const { data: incomes } = api.income.getAllIncomes.useQuery();
+
+  const availableFinancialYears = useMemo(() => {
+    if (!incomes) return [];
+
+    const years = new Set<string>();
+
+    incomes.forEach((income) => {
+      const date = new Date(income.date);
+      const month = date.getMonth() + 1;
+      const year = date.getFullYear();
+
+      if (month >= 4) {
+        years.add(`${year}-${year + 1}`);
+      } else {
+        years.add(`${year - 1}-${year}`);
+      }
+    });
+
+    return Array.from(years).sort().reverse();
+  }, [incomes]);
   const utils = api.useUtils();
 
   const addIncomeSource = api.income.addIncomeSource.useMutation({
@@ -104,20 +143,40 @@ export default function IncomeSourcesPage() {
     }
   };
 
-  const getTotalForSource = (sourceId: string) => {
-    const totalIncome = totalIncomes?.find(
-      (stat) => stat.sourceId === sourceId,
-    );
-    return totalIncome?.totalAmount ?? 0;
+  const getFilteredIncomes = () => {
+    if (!incomes) return [];
+
+    return incomes.filter((income) => {
+      if (selectedFinancialYear === "all") return true;
+
+      const date = new Date(income.date);
+      const month = date.getMonth() + 1; // 1-12
+      const year = date.getFullYear();
+      const [startYear, endYear] = selectedFinancialYear.split("-").map(Number);
+
+      if (month >= 4) {
+        return year === startYear;
+      } else {
+        return year === endYear;
+      }
+    });
   };
 
   const getSortedSources = () => {
     if (!incomeSources) return [];
 
+    const filteredIncomes = getFilteredIncomes();
+    const sourceTotal = new Map<string, number>();
+
+    filteredIncomes.forEach((income) => {
+      const current = sourceTotal.get(income.sourceId) ?? 0;
+      sourceTotal.set(income.sourceId, current + income.amount);
+    });
+
     return incomeSources
       .map((source) => ({
         ...source,
-        total: getTotalForSource(source.id),
+        total: sourceTotal.get(source.id) ?? 0,
       }))
       .sort((a, b) => b.total - a.total);
   };
@@ -131,10 +190,7 @@ export default function IncomeSourcesPage() {
           </h1>
           <p className="text-muted-foreground">
             Total: ₹
-            {new Intl.NumberFormat("en-IN", {
-              maximumFractionDigits: 0,
-              style: "decimal",
-            }).format(
+            {formatIndianNumber(
               getSortedSources().reduce(
                 (acc, curr) => Number(acc) + Number(curr.total),
                 0,
@@ -142,41 +198,83 @@ export default function IncomeSourcesPage() {
             )}
           </p>
         </div>
-        <Dialog open={isAddSourceOpen} onOpenChange={setIsAddSourceOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-1">
-              <Plus className="h-4 w-4" /> Add
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Income Source</DialogTitle>
-              <DialogDescription>
-                Enter a name for the new income source.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleAddSource}>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input
-                    id="name"
-                    value={newSource.name}
-                    onChange={(e) =>
-                      setNewSource({ ...newSource, name: e.target.value })
-                    }
-                    required
-                  />
+        <div className="flex items-center gap-2">
+          <Select
+            value={selectedFinancialYear}
+            onValueChange={setSelectedFinancialYear}
+          >
+            <SelectTrigger className="w-10">
+              <Filter className="h-4 w-4" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Years</SelectItem>
+              {availableFinancialYears
+                .map((year) => {
+                  const yearTotal = incomes
+                    ?.filter((income) => {
+                      const date = new Date(income.date);
+                      const month = date.getMonth() + 1;
+                      const incomeYear = date.getFullYear();
+                      const [startYear, endYear] = year.split("-").map(Number);
+
+                      if (month >= 4) {
+                        return incomeYear === startYear;
+                      } else {
+                        return incomeYear === endYear;
+                      }
+                    })
+                    .reduce((total, income) => total + income.amount, 0);
+
+                  return {
+                    year,
+                    total: yearTotal ?? 0,
+                  };
+                })
+                .sort((a, b) => b.total - a.total)
+                .map(({ year, total }) => (
+                  <SelectItem key={year} value={year}>
+                    FY {formatFinancialYear(year)} (₹{formatIndianNumber(total)}
+                    )
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+          <Dialog open={isAddSourceOpen} onOpenChange={setIsAddSourceOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-1">
+                <Plus className="h-4 w-4" /> Add
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Income Source</DialogTitle>
+                <DialogDescription>
+                  Enter a name for the new income source.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleAddSource}>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      value={newSource.name}
+                      onChange={(e) =>
+                        setNewSource({ ...newSource, name: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit" disabled={addIncomeSource.isPending}>
-                  {addIncomeSource.isPending ? "Adding..." : "Add Source"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <DialogFooter>
+                  <Button type="submit" disabled={addIncomeSource.isPending}>
+                    {addIncomeSource.isPending ? "Adding..." : "Add Source"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Sources Grid */}
@@ -194,7 +292,13 @@ export default function IncomeSourcesPage() {
               className="hover:bg-accent/50 cursor-pointer transition-colors"
               onClick={() =>
                 !isEditSourceOpen &&
-                router.push(`/income-statement-source?sourceId=${source.id}`)
+                router.push(
+                  `/income-statement-source?sourceId=${source.id}${
+                    selectedFinancialYear === "all"
+                      ? ""
+                      : `&financialYear=${selectedFinancialYear}`
+                  }`,
+                )
               }
             >
               <CardHeader>
@@ -202,11 +306,7 @@ export default function IncomeSourcesPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  ₹{" "}
-                  {new Intl.NumberFormat("en-IN", {
-                    maximumFractionDigits: 0,
-                    style: "decimal",
-                  }).format(source.total)}
+                  ₹ {formatIndianNumber(source.total)}
                 </div>
                 <p className="text-muted-foreground text-sm">
                   Total income from this source

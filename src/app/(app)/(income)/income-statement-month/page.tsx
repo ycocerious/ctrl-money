@@ -57,7 +57,7 @@ export default function IncomeStatementMonthPage() {
       await utils.income.getIncomeStatementsForSpecificMonth.invalidate();
       await utils.income.getIncomeStatementsForSpecificSource.invalidate();
       await utils.income.getTotalIncomeForSpecificMonth.invalidate();
-      await utils.income.getTotalIncomeForAllSources.invalidate();
+      await utils.income.getAllIncomes.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -70,7 +70,7 @@ export default function IncomeStatementMonthPage() {
       await utils.income.getIncomeStatementsForSpecificMonth.invalidate();
       await utils.income.getIncomeStatementsForSpecificSource.invalidate();
       await utils.income.getTotalIncomeForSpecificMonth.invalidate();
-      await utils.income.getTotalIncomeForAllSources.invalidate();
+      await utils.income.getAllIncomes.invalidate();
     },
     onError: (error) => {
       toast.error(error.message);
