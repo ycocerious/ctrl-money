@@ -261,7 +261,6 @@ export default function ReceivablesPage() {
                             : format(selectedReceivable.date, "yyyy-MM-dd"),
                         });
                       }}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>

@@ -336,7 +336,6 @@ export default function SpendStatementCategoryPage() {
                             : format(selectedSpend.date, "yyyy-MM-dd"),
                         });
                       }}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>

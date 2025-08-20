@@ -278,7 +278,6 @@ export default function IncomeStatementMonthPage() {
                             : format(selectedIncome.date, "yyyy-MM-dd"),
                         });
                       }}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>

@@ -378,7 +378,6 @@ export default function DashboardPage() {
                                   ),
                             })
                           }
-                          initialFocus
                         />
                       </PopoverContent>
                     </Popover>
@@ -557,7 +556,6 @@ export default function DashboardPage() {
                                 : newSpend.date,
                             })
                           }
-                          initialFocus
                         />
                       </PopoverContent>
                     </Popover>
@@ -697,7 +695,6 @@ export default function DashboardPage() {
                                   ),
                             })
                           }
-                          initialFocus
                         />
                       </PopoverContent>
                     </Popover>

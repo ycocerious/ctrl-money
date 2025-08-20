@@ -329,7 +329,6 @@ export default function SpendStatementMonthPage() {
                             : format(selectedSpend.date, "yyyy-MM-dd"),
                         });
                       }}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>
